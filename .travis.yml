@@ -1,0 +1,8 @@
+language: go
+sudo: false
+go:
+  - 1.6
+script:
+  - make lint
+  - make gofmt
+  - make test
