@@ -33,10 +33,6 @@ var RippleEncoding = encoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = encoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
-func (encoding *Encoding) at(idx int64) byte {
-	return encoding.alphabet[idx]
-}
-
 var radix = big.NewInt(58)
 
 func reverse(data []byte) {
@@ -57,7 +53,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
-			bytes = append(bytes, encoding.at(0))
+			bytes = append(bytes, encoding.alphabet[0])
 		} else {
 			break
 		}
@@ -69,7 +65,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 		switch n.Cmp(zero) {
 		case 1:
 			n.DivMod(n, radix, mod)
-			bytes = append(bytes, encoding.at(mod.Int64()))
+			bytes = append(bytes, encoding.alphabet[mod.Int64()])
 		case 0:
 			reverse(bytes[zerocnt:])
 			return bytes, nil
@@ -86,7 +82,7 @@ func (encoding *Encoding) Decode(src []byte) ([]byte, error) {
 	}
 	var zeros []byte
 	for i, c := range src {
-		if c == encoding.at(0) && i < len(src)-1 {
+		if c == encoding.alphabet[0] && i < len(src)-1 {
 			zeros = append(zeros, '0')
 		} else {
 			break
