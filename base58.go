@@ -24,13 +24,13 @@ func encoding(alphabet []byte) *Encoding {
 	return enc
 }
 
-// FlickrEncoding is the encoding scheme used in Flickr's short URLs.
+// FlickrEncoding is the encoding scheme used for Flickr's short URLs.
 var FlickrEncoding = encoding([]byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"))
 
-// RippleEncoding is the encoding scheme used Ripple addresses.
+// RippleEncoding is the encoding scheme used for Ripple addresses.
 var RippleEncoding = encoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"))
 
-// BitcoinEncoding is the encoding scheme used Bitcoin addresses.
+// BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = encoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 func (encoding *Encoding) index(c byte) int64 {
