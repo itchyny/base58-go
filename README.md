@@ -1,4 +1,7 @@
 # base58-go [![Travis Build Status](https://travis-ci.org/itchyny/base58-go.svg?branch=master)](https://travis-ci.org/itchyny/base58-go)
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/itchyny/base58-go)](https://goreportcard.com/report/github.com/itchyny/base58-go)
+
 ### Base58 encoding/decoding package in Go
 This is a Go language package fo encoding/decoding base58 strings.
 This package supports multiple encodings.

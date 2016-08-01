@@ -61,7 +61,7 @@ func TestEncode(t *testing.T) {
 		for _, pair := range testcase.testpairs {
 			got, err := testcase.encoding.Encode([]byte(pair.decoded))
 			if err != nil {
-				t.Errorf("Error occured while encoding %s.", pair.decoded)
+				t.Errorf("Error occurred while encoding %s.", pair.decoded)
 			}
 			if string(got) != pair.encoded {
 				t.Errorf("Encode(%s) = %s, want %s", pair.decoded, string(got), pair.encoded)
@@ -75,7 +75,7 @@ func TestDecode(t *testing.T) {
 		for _, pair := range testcase.testpairs {
 			got, err := testcase.encoding.Decode([]byte(pair.encoded))
 			if err != nil {
-				t.Errorf("Error occured while decoding %s.", pair.encoded)
+				t.Errorf("Error occurred while decoding %s.", pair.encoded)
 			}
 			if string(got) != pair.decoded {
 				t.Errorf("Decode(%s) = %s, want %s", pair.encoded, string(got), pair.decoded)
