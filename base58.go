@@ -1,33 +1,44 @@
 package base58
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 )
 
 // An Encoding is a radix 58 encoding/decoding scheme.
 type Encoding struct {
-	alphabet []byte
+	alphabet  []byte
+	decodeMap [256]byte
+}
+
+func encoding(alphabet []byte) *Encoding {
+	enc := &Encoding{
+		alphabet: alphabet,
+	}
+	for i := range enc.decodeMap {
+		enc.decodeMap[i] = 0xFF
+	}
+	for i, b := range alphabet {
+		enc.decodeMap[b] = byte(i)
+	}
+	return enc
 }
 
 // FlickrEncoding is the encoding scheme used in Flickr's short URLs.
-var FlickrEncoding = &Encoding{
-	alphabet: []byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"),
-}
+var FlickrEncoding = encoding([]byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"))
 
 // RippleEncoding is the encoding scheme used Ripple addresses.
-var RippleEncoding = &Encoding{
-	alphabet: []byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"),
-}
+var RippleEncoding = encoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"))
 
 // BitcoinEncoding is the encoding scheme used Bitcoin addresses.
-var BitcoinEncoding = &Encoding{
-	alphabet: []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"),
-}
+var BitcoinEncoding = encoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 func (encoding *Encoding) index(c byte) int64 {
-	return int64(bytes.IndexByte(encoding.alphabet, c))
+	b := encoding.decodeMap[c]
+	if b == 0xFF {
+		return -1
+	}
+	return int64(b)
 }
 
 func (encoding *Encoding) at(idx int64) byte {
