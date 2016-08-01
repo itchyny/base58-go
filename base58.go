@@ -47,6 +47,14 @@ func (encoding *Encoding) at(idx int64) byte {
 
 var radix = big.NewInt(58)
 
+func reverse(data []byte) []byte {
+	for i, j := 0, len(data)-1; i < j; i++ {
+		data[i], data[j] = data[j], data[i]
+		j--
+	}
+	return data
+}
+
 // Encode encodes the number represented in the byte array base 10.
 func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	if len(src) == 0 {
@@ -56,24 +64,25 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("Expecting a number but got \"%s\".", string(src))
 	}
-	var zeros []byte
+	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
-			zeros = append(zeros, encoding.at(0))
+			bytes = append(bytes, encoding.at(0))
 		} else {
 			break
 		}
 	}
-	var bytes []byte
+	nprefix := len(bytes)
 	mod := new(big.Int)
 	zero := big.NewInt(0)
 	for {
 		switch n.Cmp(zero) {
 		case 1:
 			n.DivMod(n, radix, mod)
-			bytes = append([]byte{encoding.at(mod.Int64())}, bytes...)
+			bytes = append(bytes, encoding.at(mod.Int64()))
 		case 0:
-			return append(zeros, bytes...), nil
+			reverse(bytes[nprefix:])
+			return bytes, nil
 		default:
 			return nil, fmt.Errorf("Expecting a positive number in base58 encoding but got \"%s\".", n)
 		}
