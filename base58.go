@@ -72,7 +72,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 			break
 		}
 	}
-	nprefix := len(bytes)
+	zerocnt := len(bytes)
 	mod := new(big.Int)
 	zero := big.NewInt(0)
 	for {
@@ -81,7 +81,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 			n.DivMod(n, radix, mod)
 			bytes = append(bytes, encoding.at(mod.Int64()))
 		case 0:
-			reverse(bytes[nprefix:])
+			reverse(bytes[zerocnt:])
 			return bytes, nil
 		default:
 			return nil, fmt.Errorf("Expecting a positive number in base58 encoding but got \"%s\".", n)
