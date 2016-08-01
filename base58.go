@@ -1,33 +1,44 @@
 package base58
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 )
 
 // An Encoding is a radix 58 encoding/decoding scheme.
 type Encoding struct {
-	alphabet []byte
+	alphabet  []byte
+	decodeMap [256]byte
+}
+
+func encoding(alphabet []byte) *Encoding {
+	enc := &Encoding{
+		alphabet: alphabet,
+	}
+	for i := range enc.decodeMap {
+		enc.decodeMap[i] = 0xFF
+	}
+	for i, b := range alphabet {
+		enc.decodeMap[b] = byte(i)
+	}
+	return enc
 }
 
 // FlickrEncoding is the encoding scheme used in Flickr's short URLs.
-var FlickrEncoding = &Encoding{
-	alphabet: []byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"),
-}
+var FlickrEncoding = encoding([]byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"))
 
 // RippleEncoding is the encoding scheme used Ripple addresses.
-var RippleEncoding = &Encoding{
-	alphabet: []byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"),
-}
+var RippleEncoding = encoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"))
 
 // BitcoinEncoding is the encoding scheme used Bitcoin addresses.
-var BitcoinEncoding = &Encoding{
-	alphabet: []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"),
-}
+var BitcoinEncoding = encoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 func (encoding *Encoding) index(c byte) int64 {
-	return int64(bytes.IndexByte(encoding.alphabet, c))
+	b := encoding.decodeMap[c]
+	if b == 0xFF {
+		return -1
+	}
+	return int64(b)
 }
 
 func (encoding *Encoding) at(idx int64) byte {
@@ -35,6 +46,14 @@ func (encoding *Encoding) at(idx int64) byte {
 }
 
 var radix = big.NewInt(58)
+
+func reverse(data []byte) []byte {
+	for i, j := 0, len(data)-1; i < j; i++ {
+		data[i], data[j] = data[j], data[i]
+		j--
+	}
+	return data
+}
 
 // Encode encodes the number represented in the byte array base 10.
 func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
@@ -45,24 +64,25 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("Expecting a number but got \"%s\".", string(src))
 	}
-	var zeros []byte
+	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
-			zeros = append(zeros, encoding.at(0))
+			bytes = append(bytes, encoding.at(0))
 		} else {
 			break
 		}
 	}
-	var bytes []byte
+	nprefix := len(bytes)
 	mod := new(big.Int)
 	zero := big.NewInt(0)
 	for {
 		switch n.Cmp(zero) {
 		case 1:
 			n.DivMod(n, radix, mod)
-			bytes = append([]byte{encoding.at(mod.Int64())}, bytes...)
+			bytes = append(bytes, encoding.at(mod.Int64()))
 		case 0:
-			return append(zeros, bytes...), nil
+			reverse(bytes[nprefix:])
+			return bytes, nil
 		default:
 			return nil, fmt.Errorf("Expecting a positive number in base58 encoding but got \"%s\".", n)
 		}
