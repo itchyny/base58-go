@@ -8,7 +8,7 @@ import (
 // An Encoding is a radix 58 encoding/decoding scheme.
 type Encoding struct {
 	alphabet  []byte
-	decodeMap [256]byte
+	decodeMap [256]int64
 }
 
 func encoding(alphabet []byte) *Encoding {
@@ -16,10 +16,10 @@ func encoding(alphabet []byte) *Encoding {
 		alphabet: alphabet,
 	}
 	for i := range enc.decodeMap {
-		enc.decodeMap[i] = 0xFF
+		enc.decodeMap[i] = -1
 	}
 	for i, b := range alphabet {
-		enc.decodeMap[b] = byte(i)
+		enc.decodeMap[b] = int64(i)
 	}
 	return enc
 }
@@ -32,14 +32,6 @@ var RippleEncoding = encoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65
 
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = encoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
-
-func (encoding *Encoding) index(c byte) int64 {
-	b := encoding.decodeMap[c]
-	if b == 0xFF {
-		return -1
-	}
-	return int64(b)
-}
 
 func (encoding *Encoding) at(idx int64) byte {
 	return encoding.alphabet[idx]
@@ -103,7 +95,7 @@ func (encoding *Encoding) Decode(src []byte) ([]byte, error) {
 	n := new(big.Int)
 	var i int64
 	for _, c := range src {
-		if i = encoding.index(c); i < 0 {
+		if i = encoding.decodeMap[c]; i < 0 {
 			return nil, fmt.Errorf("Invalid character '%c' in decoding a base58 string \"%s\".", c, src)
 		}
 		n.Add(n.Mul(n, radix), big.NewInt(i))
