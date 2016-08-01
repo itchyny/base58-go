@@ -47,12 +47,10 @@ func (encoding *Encoding) at(idx int64) byte {
 
 var radix = big.NewInt(58)
 
-func reverse(data []byte) []byte {
-	for i, j := 0, len(data)-1; i < j; i++ {
+func reverse(data []byte) {
+	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
 		data[i], data[j] = data[j], data[i]
-		j--
 	}
-	return data
 }
 
 // Encode encodes the number represented in the byte array base 10.
