@@ -55,11 +55,11 @@ func main() {
 		outFile = os.Stdout
 	} else {
 		file, err := os.Create(opts.Output)
-		defer file.Close()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(1)
 		}
+		defer file.Close()
 		outFile = file
 	}
 	var status int
@@ -69,11 +69,11 @@ func main() {
 	}
 	for _, name := range inputFiles {
 		file, err := os.Open(name)
-		defer file.Close()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			continue
 		}
+		defer file.Close()
 		if s := run(opt, file, outFile, os.Stderr); status < s {
 			status = s
 		}
