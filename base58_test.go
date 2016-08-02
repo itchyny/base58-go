@@ -88,7 +88,7 @@ func BenchmarkEncode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, testcase := range testcases {
 			for _, pair := range testcase.testpairs {
-				testcase.encoding.Encode([]byte(pair.decoded))
+				_, _ = testcase.encoding.Encode([]byte(pair.decoded))
 			}
 		}
 	}
@@ -98,7 +98,7 @@ func BenchmarkDecode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, testcase := range testcases {
 			for _, pair := range testcase.testpairs {
-				testcase.encoding.Decode([]byte(pair.encoded))
+				_, _ = testcase.encoding.Decode([]byte(pair.encoded))
 			}
 		}
 	}

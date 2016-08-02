@@ -71,7 +71,7 @@ func Test_run_encode(t *testing.T) {
 		var inbuf bytes.Buffer
 		var outbuf bytes.Buffer
 		var outerrbuf bytes.Buffer
-		inbuf.WriteString(decoded)
+		_, _ = inbuf.WriteString(decoded)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
 		want := encoded
 		got := outbuf.String()
@@ -88,7 +88,7 @@ func Test_run_encode_error(t *testing.T) {
 		var inbuf bytes.Buffer
 		var outbuf bytes.Buffer
 		var outerrbuf bytes.Buffer
-		inbuf.WriteString(decodedInvalid)
+		_, _ = inbuf.WriteString(decodedInvalid)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
 		want := "Expecting a number but got \"foo\".\n"
 		want += "Expecting a number but got \"bar\".\n"
@@ -111,7 +111,7 @@ func Test_run_decode(t *testing.T) {
 		var inbuf bytes.Buffer
 		var outbuf bytes.Buffer
 		var outerrbuf bytes.Buffer
-		inbuf.WriteString(encoded)
+		_, _ = inbuf.WriteString(encoded)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
 		want := decoded
 		got := outbuf.String()
@@ -128,7 +128,7 @@ func Test_run_decode_error(t *testing.T) {
 		var inbuf bytes.Buffer
 		var outbuf bytes.Buffer
 		var outerrbuf bytes.Buffer
-		inbuf.WriteString(encodedInvalid)
+		_, _ = inbuf.WriteString(encodedInvalid)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
 		want := "Invalid character 'O' in decoding a base58 string \"FOO\".\n"
 		want += "Invalid character 'l' in decoding a base58 string \"Fal\".\n"
