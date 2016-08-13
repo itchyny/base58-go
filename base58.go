@@ -7,18 +7,17 @@ import (
 
 // An Encoding is a radix 58 encoding/decoding scheme.
 type Encoding struct {
-	alphabet  []byte
+	alphabet  [58]byte
 	decodeMap [256]int64
 }
 
 func encoding(alphabet []byte) *Encoding {
-	enc := &Encoding{
-		alphabet: alphabet,
-	}
+	enc := &Encoding{}
+	copy(enc.alphabet[:], alphabet[:])
 	for i := range enc.decodeMap {
 		enc.decodeMap[i] = -1
 	}
-	for i, b := range alphabet {
+	for i, b := range enc.alphabet {
 		enc.decodeMap[b] = int64(i)
 	}
 	return enc
