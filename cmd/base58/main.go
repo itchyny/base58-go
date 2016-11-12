@@ -98,7 +98,8 @@ func run(opt *option, in io.Reader, out io.Writer, outerr io.Writer) int {
 			status = 1
 			continue
 		}
-		out.Write(append(result, 0x0a))
+		out.Write(result)
+		out.Write([]byte{0x0a})
 	}
 	return status
 }
