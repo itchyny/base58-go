@@ -90,8 +90,8 @@ func Test_run_encode_error(t *testing.T) {
 		var outerrbuf bytes.Buffer
 		_, _ = inbuf.WriteString(decodedInvalid)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := "Expecting a number but got \"foo\".\n"
-		want += "Expecting a number but got \"bar\".\n"
+		want := "expecting a number but got \"foo\"\n"
+		want += "expecting a number but got \"bar\"\n"
 		got := outerrbuf.String()
 		if got != want {
 			t.Errorf("run() outputs error %s, want %s", got, want)
@@ -130,8 +130,8 @@ func Test_run_decode_error(t *testing.T) {
 		var outerrbuf bytes.Buffer
 		_, _ = inbuf.WriteString(encodedInvalid)
 		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := "Invalid character 'O' in decoding a base58 string \"FOO\".\n"
-		want += "Invalid character 'l' in decoding a base58 string \"Fal\".\n"
+		want := "invalid character 'O' in decoding a base58 string \"FOO\"\n"
+		want += "invalid character 'l' in decoding a base58 string \"Fal\"\n"
 		got := outerrbuf.String()
 		if got != want {
 			t.Errorf("run() outputs error %s, want %s", got, want)
