@@ -47,7 +47,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	}
 	n, ok := new(big.Int).SetString(string(src), 10)
 	if !ok {
-		return nil, fmt.Errorf("Expecting a number but got \"%s\".", string(src))
+		return nil, fmt.Errorf("expecting a number but got %q", src)
 	}
 	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
@@ -69,7 +69,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 			reverse(bytes[zerocnt:])
 			return bytes, nil
 		default:
-			return nil, fmt.Errorf("Expecting a positive number in base58 encoding but got \"%s\".", n)
+			return nil, fmt.Errorf("expecting a positive number in base58 encoding but got %q", n)
 		}
 	}
 }
@@ -91,7 +91,7 @@ func (encoding *Encoding) Decode(src []byte) ([]byte, error) {
 	var i int64
 	for _, c := range src {
 		if i = encoding.decodeMap[c]; i < 0 {
-			return nil, fmt.Errorf("Invalid character '%c' in decoding a base58 string \"%s\".", c, src)
+			return nil, fmt.Errorf("invalid character '%c' in decoding a base58 string \"%s\"", c, src)
 		}
 		n.Add(n.Mul(n, radix), big.NewInt(i))
 	}
