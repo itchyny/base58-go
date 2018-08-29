@@ -16,12 +16,9 @@ testdeps:
 	go get -d -v -t ./...
 	go get -u github.com/golang/lint/golint
 
-LINT_RET = .golint.txt
 lint: testdeps
-	go vet
-	rm -f $(LINT_RET)
-	golint ./... | tee $(LINT_RET)
-	test ! -s $(LINT_RET)
+	go vet ./...
+	golint -set_exit_status ./...
 
 GOFMT_RET = .gofmt.txt
 gofmt: testdeps
