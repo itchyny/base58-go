@@ -14,7 +14,7 @@ test: testdeps build
 
 testdeps:
 	go get -d -v -t ./...
-	go get -u github.com/golang/lint/golint
+	go get -u golang.org/x/lint/golint
 
 lint: testdeps
 	go vet ./...
