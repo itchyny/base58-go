@@ -1,9 +1,11 @@
+BIN := base58
+
 .PHONY: all
 all: clean build
 
 .PHONY: build
 build: deps
-	go build -o build/base58 ./cmd/base58
+	go build -o build/$(BIN) ./cmd/...
 
 .PHONY: install
 install: deps
