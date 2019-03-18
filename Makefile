@@ -1,40 +1,34 @@
 BIN := base58
+BUILD_LDFLAGS := "-s -w"
+export GO111MODULE=on
 
 .PHONY: all
 all: clean build
 
 .PHONY: build
 build: deps
-	go build -o build/$(BIN) ./cmd/...
+	go build -ldflags=$(BUILD_LDFLAGS) -o build/$(BIN) ./cmd/...
 
 .PHONY: install
 install: deps
-	go install ./...
+	go install -ldflags=$(BUILD_LDFLAGS) ./...
 
 .PHONY: deps
 deps:
 	go get -d -v ./...
 
 .PHONY: test
-test: testdeps build
+test: build
 	go test -v ./...
 
-.PHONY: testdeps
-testdeps:
-	go get -d -v -t ./...
-	go get -u golang.org/x/lint/golint
-
 .PHONY: lint
-lint: testdeps
+lint: build lintdeps
 	go vet ./...
 	golint -set_exit_status ./...
 
-GOFMT_RET = .gofmt.txt
-.PHONY: gofmt
-gofmt: testdeps
-	rm -f $(GOFMT_RET)
-	gofmt -s -d *.go | tee $(GOFMT_RET)
-	test ! -s $(GOFMT_RET)
+.PHONY: lintdeps
+lintdeps:
+	GO111MODULE=off go get -u golang.org/x/lint/golint
 
 .PHONY: clean
 clean:
