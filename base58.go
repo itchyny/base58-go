@@ -41,7 +41,7 @@ func reverse(data []byte) {
 }
 
 // Encode encodes the number represented in the byte array base 10.
-func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
+func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 	if len(src) == 0 {
 		return []byte{}, nil
 	}
@@ -52,7 +52,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
-			bytes = append(bytes, encoding.alphabet[0])
+			bytes = append(bytes, enc.alphabet[0])
 		} else {
 			break
 		}
@@ -64,7 +64,7 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 		switch n.Cmp(zero) {
 		case 1:
 			n.DivMod(n, radix, mod)
-			bytes = append(bytes, encoding.alphabet[mod.Int64()])
+			bytes = append(bytes, enc.alphabet[mod.Int64()])
 		case 0:
 			reverse(bytes[zerocnt:])
 			return bytes, nil
@@ -75,13 +75,13 @@ func (encoding *Encoding) Encode(src []byte) ([]byte, error) {
 }
 
 // Decode decodes the base58 encoded bytes.
-func (encoding *Encoding) Decode(src []byte) ([]byte, error) {
+func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 	if len(src) == 0 {
 		return []byte{}, nil
 	}
 	var zeros []byte
 	for i, c := range src {
-		if c == encoding.alphabet[0] && i < len(src)-1 {
+		if c == enc.alphabet[0] && i < len(src)-1 {
 			zeros = append(zeros, '0')
 		} else {
 			break
@@ -90,7 +90,7 @@ func (encoding *Encoding) Decode(src []byte) ([]byte, error) {
 	n := new(big.Int)
 	var i int64
 	for _, c := range src {
-		if i = encoding.decodeMap[c]; i < 0 {
+		if i = enc.decodeMap[c]; i < 0 {
 			return nil, fmt.Errorf("invalid character '%c' in decoding a base58 string \"%s\"", c, src)
 		}
 		n.Add(n.Mul(n, radix), big.NewInt(i))
