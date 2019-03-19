@@ -11,7 +11,8 @@ type Encoding struct {
 	decodeMap [256]int64
 }
 
-func newEncoding(alphabet []byte) *Encoding {
+// New creates a new base58 encoding.
+func New(alphabet []byte) *Encoding {
 	enc := &Encoding{}
 	copy(enc.alphabet[:], alphabet[:])
 	for i := range enc.decodeMap {
@@ -24,13 +25,13 @@ func newEncoding(alphabet []byte) *Encoding {
 }
 
 // FlickrEncoding is the encoding scheme used for Flickr's short URLs.
-var FlickrEncoding = newEncoding([]byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"))
+var FlickrEncoding = New([]byte("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"))
 
 // RippleEncoding is the encoding scheme used for Ripple addresses.
-var RippleEncoding = newEncoding([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"))
+var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz"))
 
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
-var BitcoinEncoding = newEncoding([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
+var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 var radix = big.NewInt(58)
 
