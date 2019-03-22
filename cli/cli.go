@@ -10,6 +10,11 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+const (
+	exitCodeOK = iota
+	exitCodeErr
+)
+
 type cli struct {
 	inStream  io.Reader
 	outStream io.Writer
@@ -48,7 +53,7 @@ func (cli *cli) run(args []string) int {
 	var opts flagopts
 	args, err := flags.ParseArgs(&opts, args)
 	if err != nil {
-		return 1
+		return exitCodeErr
 	}
 	var inputFiles []string
 	for _, name := range append(opts.Input, args...) {
@@ -63,12 +68,12 @@ func (cli *cli) run(args []string) int {
 		file, err := os.Create(opts.Output)
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error())
-			return 1
+			return exitCodeErr
 		}
 		defer file.Close()
 		outFile = file
 	}
-	var status int
+	status := exitCodeOK
 	opt := &option{decode: opts.Decode, encoding: opts.encoding()}
 	if len(inputFiles) == 0 {
 		status = cli.runInternal(opt, cli.inStream, outFile)
@@ -89,7 +94,7 @@ func (cli *cli) run(args []string) int {
 
 func (cli *cli) runInternal(opt *option, in io.Reader, out io.Writer) int {
 	scanner := bufio.NewScanner(in)
-	var status int
+	status := exitCodeOK
 	var result []byte
 	var err error
 	for scanner.Scan() {
@@ -101,7 +106,7 @@ func (cli *cli) runInternal(opt *option, in io.Reader, out io.Writer) int {
 		}
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error())
-			status = 1
+			status = exitCodeErr
 			continue
 		}
 		out.Write(result)
