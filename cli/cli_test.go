@@ -266,6 +266,21 @@ invalid character 'l' in decoding a base58 string "Fal"
 			err: `unknown encoding: foo
 `,
 		},
+		{
+			name: "input error",
+			args: []string{"--input"},
+			err:  "expected argument for flag `-i, --input'\n",
+		},
+		{
+			name: "input error file",
+			args: []string{"--input", "xxx"},
+			err:  "open xxx: no such file or directory\n",
+		},
+		{
+			name: "invalid flag",
+			args: []string{"--foo"},
+			err:  "unknown flag `foo'\n",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
