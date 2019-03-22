@@ -260,6 +260,12 @@ Fal
 invalid character 'l' in decoding a base58 string "Fal"
 `,
 		},
+		{
+			name: "encoding error",
+			args: []string{"--encoding", "foo"},
+			err: `unknown encoding: foo
+`,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

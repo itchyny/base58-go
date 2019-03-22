@@ -28,7 +28,7 @@ type flagopts struct {
 	Output   string   `short:"o" long:"output" default:"-" description:"output file"`
 }
 
-func (opt *flagopts) encoding() *base58.Encoding {
+func (opt *flagopts) getEncoding() (*base58.Encoding, error) {
 	var encoding *base58.Encoding
 	switch opt.Encoding {
 	case "flickr":
@@ -38,10 +38,9 @@ func (opt *flagopts) encoding() *base58.Encoding {
 	case "bitcoin":
 		encoding = base58.BitcoinEncoding
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown encoding: %s.\n", opt.Encoding)
-		os.Exit(1)
+		return nil, fmt.Errorf("unknown encoding: %s", opt.Encoding)
 	}
-	return encoding
+	return encoding, nil
 }
 
 type option struct {
@@ -74,7 +73,11 @@ func (cli *cli) run(args []string) int {
 		outFile = file
 	}
 	status := exitCodeOK
-	opt := &option{decode: opts.Decode, encoding: opts.encoding()}
+	opt := &option{decode: opts.Decode}
+	if opt.encoding, err = opts.getEncoding(); err != nil {
+		fmt.Fprintln(cli.errStream, err.Error())
+		return exitCodeErr
+	}
 	if len(inputFiles) == 0 {
 		status = cli.runInternal(opt, cli.inStream, outFile)
 	}
