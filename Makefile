@@ -7,7 +7,7 @@ all: clean build
 
 .PHONY: build
 build: deps
-	go build -ldflags=$(BUILD_LDFLAGS) -o build/$(BIN) ./cmd/...
+	go build -ldflags=$(BUILD_LDFLAGS) -o build/$(BIN) ./cmd/$(BIN)
 
 .PHONY: install
 install: deps
