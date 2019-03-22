@@ -44,11 +44,6 @@ func (opt *flagopts) getEncoding() (*base58.Encoding, error) {
 	return encoding, nil
 }
 
-type option struct {
-	decode   bool
-	encoding *base58.Encoding
-}
-
 func (cli *cli) run(args []string) int {
 	var opts flagopts
 	args, err := flags.NewParser(
@@ -74,13 +69,13 @@ func (cli *cli) run(args []string) int {
 		cli.outStream = file
 	}
 	status := exitCodeOK
-	opt := &option{decode: opts.Decode}
-	if opt.encoding, err = opts.getEncoding(); err != nil {
+	var encoding *base58.Encoding
+	if encoding, err = opts.getEncoding(); err != nil {
 		fmt.Fprintln(cli.errStream, err.Error())
 		return exitCodeErr
 	}
 	if len(inputFiles) == 0 {
-		if err := cli.runInternal(opt, cli.inStream); err != nil {
+		if err := cli.runInternal(opts.Decode, encoding, cli.inStream); err != nil {
 			fmt.Fprint(cli.errStream, err.Error())
 			status = exitCodeErr
 		}
@@ -93,7 +88,7 @@ func (cli *cli) run(args []string) int {
 			continue
 		}
 		defer file.Close()
-		if err := cli.runInternal(opt, file); err != nil {
+		if err := cli.runInternal(opts.Decode, encoding, file); err != nil {
 			fmt.Fprint(cli.errStream, err.Error())
 			status = exitCodeErr
 		}
@@ -101,17 +96,17 @@ func (cli *cli) run(args []string) int {
 	return status
 }
 
-func (cli *cli) runInternal(opt *option, in io.Reader) error {
+func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader) error {
 	scanner := bufio.NewScanner(in)
 	var result []byte
 	var errs []error
 	var err error
 	for scanner.Scan() {
 		src := scanner.Bytes()
-		if opt.decode {
-			result, err = opt.encoding.Decode(src)
+		if decode {
+			result, err = encoding.Decode(src)
 		} else {
-			result, err = opt.encoding.Encode(src)
+			result, err = encoding.Encode(src)
 		}
 		if err != nil {
 			errs = append(errs, err)
