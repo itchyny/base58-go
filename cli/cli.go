@@ -10,6 +10,9 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+type cli struct {
+}
+
 type flagopts struct {
 	Decode   bool     `short:"D" long:"decode" description:"decodes input"`
 	Encoding string   `short:"e" long:"encoding" default:"flickr" description:"encoding (flickr, ripple or bitcoin)"`
@@ -38,10 +41,9 @@ type option struct {
 	encoding *base58.Encoding
 }
 
-// Run base58
-func Run() int {
+func (cli *cli) run(args []string) int {
 	var opts flagopts
-	args, err := flags.Parse(&opts)
+	args, err := flags.ParseArgs(&opts, args)
 	if err != nil {
 		return 1
 	}
@@ -66,7 +68,7 @@ func Run() int {
 	var status int
 	opt := &option{decode: opts.Decode, encoding: opts.encoding()}
 	if len(inputFiles) == 0 {
-		status = run(opt, os.Stdin, outFile, os.Stderr)
+		status = runInternal(opt, os.Stdin, outFile, os.Stderr)
 	}
 	for _, name := range inputFiles {
 		file, err := os.Open(name)
@@ -75,14 +77,14 @@ func Run() int {
 			continue
 		}
 		defer file.Close()
-		if s := run(opt, file, outFile, os.Stderr); status < s {
+		if s := runInternal(opt, file, outFile, os.Stderr); status < s {
 			status = s
 		}
 	}
 	return status
 }
 
-func run(opt *option, in io.Reader, out io.Writer, outerr io.Writer) int {
+func runInternal(opt *option, in io.Reader, out io.Writer, outerr io.Writer) int {
 	scanner := bufio.NewScanner(in)
 	var status int
 	var result []byte
