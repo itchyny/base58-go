@@ -17,6 +17,14 @@ install: deps
 deps:
 	go get -d -v ./...
 
+.PHONY: cross
+cross: crossdeps
+	goxz -build-ldflags=$(BUILD_LDFLAGS) ./cmd/$(BIN)
+
+.PHONY: crossdeps
+crossdeps: deps
+	GO111MODULE=off go get github.com/Songmu/goxz/cmd/goxz
+
 .PHONY: test
 test: build
 	go test -v ./...
@@ -32,5 +40,5 @@ lintdeps:
 
 .PHONY: clean
 clean:
-	rm -rf build
+	rm -rf build goxz
 	go clean
