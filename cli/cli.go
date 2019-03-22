@@ -11,6 +11,9 @@ import (
 )
 
 type cli struct {
+	inStream  io.Reader
+	outStream io.Writer
+	errStream io.Writer
 }
 
 type flagopts struct {
@@ -55,11 +58,11 @@ func (cli *cli) run(args []string) int {
 	}
 	var outFile io.Writer
 	if opts.Output == "-" {
-		outFile = os.Stdout
+		outFile = cli.outStream
 	} else {
 		file, err := os.Create(opts.Output)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Fprintln(cli.errStream, err.Error())
 			return 1
 		}
 		defer file.Close()
@@ -68,23 +71,23 @@ func (cli *cli) run(args []string) int {
 	var status int
 	opt := &option{decode: opts.Decode, encoding: opts.encoding()}
 	if len(inputFiles) == 0 {
-		status = runInternal(opt, os.Stdin, outFile, os.Stderr)
+		status = cli.runInternal(opt, cli.inStream, outFile)
 	}
 	for _, name := range inputFiles {
 		file, err := os.Open(name)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Fprintln(cli.errStream, err.Error())
 			continue
 		}
 		defer file.Close()
-		if s := runInternal(opt, file, outFile, os.Stderr); status < s {
+		if s := cli.runInternal(opt, file, outFile); status < s {
 			status = s
 		}
 	}
 	return status
 }
 
-func runInternal(opt *option, in io.Reader, out io.Writer, outerr io.Writer) int {
+func (cli *cli) runInternal(opt *option, in io.Reader, out io.Writer) int {
 	scanner := bufio.NewScanner(in)
 	var status int
 	var result []byte
@@ -97,7 +100,7 @@ func runInternal(opt *option, in io.Reader, out io.Writer, outerr io.Writer) int
 			result, err = opt.encoding.Encode(src)
 		}
 		if err != nil {
-			fmt.Fprintln(outerr, err.Error())
+			fmt.Fprintln(cli.errStream, err.Error())
 			status = 1
 			continue
 		}
