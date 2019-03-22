@@ -2,139 +2,282 @@ package cli
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
-	"github.com/itchyny/base58-go"
+	"github.com/stretchr/testify/assert"
 )
 
-type testcase struct {
-	encoding  *base58.Encoding
-	testpairs []testpair
-}
-
-type testpair struct {
-	decoded string
-	encoded string
-}
-
-var testcases = []testcase{
-	{base58.FlickrEncoding, []testpair{
-		{"", ""},
-		{"0", "1"},
-		{"32", "y"},
-		{"64", "27"},
-		{"000", "111"},
-		{"512", "9Q"},
-		{"1024", "iE"},
-		{"16777216", "2tZhm"},
-		{"00068719476736", "1112NGvhhq"},
-		{"18446744073709551616", "JPwcyDCgEuq"},
-		{"79228162514264337593543950336", "5QchsBFApWPVxyp9C"},
-	}},
-	{base58.RippleEncoding, []testpair{
-		{"", ""},
-		{"0", "r"},
-		{"32", "Z"},
-		{"64", "pf"},
-		{"000", "rrr"},
-		{"512", "9q"},
-		{"1024", "JC"},
-		{"16777216", "p7zHM"},
-		{"00068719476736", "rrrpo6WHHR"},
-		{"18446744073709551616", "jFXUZedGCVR"},
-		{"79228162514264337593543950336", "nqUHTcgbQAFvYZQ9d"},
-	}},
-	{base58.BitcoinEncoding, []testpair{
-		{"", ""},
-		{"0", "1"},
-		{"32", "Z"},
-		{"64", "27"},
-		{"000", "111"},
-		{"512", "9q"},
-		{"1024", "Jf"},
-		{"16777216", "2UzHM"},
-		{"00068719476736", "1112ohWHHR"},
-		{"18446744073709551616", "jpXCZedGfVR"},
-		{"79228162514264337593543950336", "5qCHTcgbQwpvYZQ9d"},
-	}},
-}
-
-func Test_run_encode(t *testing.T) {
-	for _, testcase := range testcases {
-		opt := &option{decode: false, encoding: testcase.encoding}
-		var decoded string
-		var encoded string
-		for _, pair := range testcase.testpairs {
-			decoded += pair.decoded + "\n"
-			encoded += pair.encoded + "\n"
-		}
-		var inbuf bytes.Buffer
-		var outbuf bytes.Buffer
-		var outerrbuf bytes.Buffer
-		_, _ = inbuf.WriteString(decoded)
-		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := encoded
-		got := outbuf.String()
-		if got != encoded {
-			t.Errorf("run() outputs %s, want %s", got, want)
-		}
+func TestCliRun(t *testing.T) {
+	testCases := []struct {
+		name     string
+		args     []string
+		input    string
+		expected string
+		err      string
+	}{
+		{
+			name: "encode",
+			args: []string{},
+			input: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+			expected: `
+1
+y
+27
+111
+9Q
+iE
+2tZhm
+1112NGvhhq
+JPwcyDCgEuq
+5QchsBFApWPVxyp9C
+`,
+		},
+		{
+			name: "encode flickr",
+			args: []string{"--encoding", "flickr"},
+			input: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+			expected: `
+1
+y
+27
+111
+9Q
+iE
+2tZhm
+1112NGvhhq
+JPwcyDCgEuq
+5QchsBFApWPVxyp9C
+`,
+		},
+		{
+			name: "encode ripple",
+			args: []string{"--encoding=ripple"},
+			input: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+			expected: `
+r
+Z
+pf
+rrr
+9q
+JC
+p7zHM
+rrrpo6WHHR
+jFXUZedGCVR
+nqUHTcgbQAFvYZQ9d
+`,
+		},
+		{
+			name: "encode bitcoin",
+			args: []string{"-e", "bitcoin"},
+			input: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+			expected: `
+1
+Z
+27
+111
+9q
+Jf
+2UzHM
+1112ohWHHR
+jpXCZedGfVR
+5qCHTcgbQwpvYZQ9d
+`,
+		},
+		{
+			name: "encode error",
+			args: []string{},
+			input: `foo
+bar
+`,
+			err: `expecting a number but got "foo"
+expecting a number but got "bar"
+`,
+		},
+		{
+			name: "decode",
+			args: []string{"-D"},
+			input: `
+1
+y
+27
+111
+9Q
+iE
+2tZhm
+1112NGvhhq
+JPwcyDCgEuq
+5QchsBFApWPVxyp9C
+`,
+			expected: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+		},
+		{
+			name: "decode flickr",
+			args: []string{"--decode", "--encoding", "flickr"},
+			input: `
+1
+y
+27
+111
+9Q
+iE
+2tZhm
+1112NGvhhq
+JPwcyDCgEuq
+5QchsBFApWPVxyp9C
+`,
+			expected: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+		},
+		{
+			name: "decode ripple",
+			args: []string{"--encoding=ripple", "--decode"},
+			input: `
+r
+Z
+pf
+rrr
+9q
+JC
+p7zHM
+rrrpo6WHHR
+jFXUZedGCVR
+nqUHTcgbQAFvYZQ9d
+`,
+			expected: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+		},
+		{
+			name: "decode bitcoin",
+			args: []string{"-D", "-e", "bitcoin"},
+			input: `
+1
+Z
+27
+111
+9q
+Jf
+2UzHM
+1112ohWHHR
+jpXCZedGfVR
+5qCHTcgbQwpvYZQ9d
+`,
+			expected: `
+0
+32
+64
+000
+512
+1024
+16777216
+00068719476736
+18446744073709551616
+79228162514264337593543950336
+`,
+		},
+		{
+			name: "decode error",
+			args: []string{"--decode"},
+			input: `FOO
+Fal
+`,
+			err: `invalid character 'O' in decoding a base58 string "FOO"
+invalid character 'l' in decoding a base58 string "Fal"
+`,
+		},
 	}
-}
-
-func Test_run_encode_error(t *testing.T) {
-	for _, testcase := range testcases {
-		opt := &option{decode: false, encoding: testcase.encoding}
-		decodedInvalid := "foo\nbar\n"
-		var inbuf bytes.Buffer
-		var outbuf bytes.Buffer
-		var outerrbuf bytes.Buffer
-		_, _ = inbuf.WriteString(decodedInvalid)
-		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := "expecting a number but got \"foo\"\n"
-		want += "expecting a number but got \"bar\"\n"
-		got := outerrbuf.String()
-		if got != want {
-			t.Errorf("run() outputs error %s, want %s", got, want)
-		}
-	}
-}
-
-func Test_run_decode(t *testing.T) {
-	for _, testcase := range testcases {
-		opt := &option{decode: true, encoding: testcase.encoding}
-		var decoded string
-		var encoded string
-		for _, pair := range testcase.testpairs {
-			decoded += pair.decoded + "\n"
-			encoded += pair.encoded + "\n"
-		}
-		var inbuf bytes.Buffer
-		var outbuf bytes.Buffer
-		var outerrbuf bytes.Buffer
-		_, _ = inbuf.WriteString(encoded)
-		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := decoded
-		got := outbuf.String()
-		if got != want {
-			t.Errorf("run() outputs %s, want %s", got, want)
-		}
-	}
-}
-
-func Test_run_decode_error(t *testing.T) {
-	for _, testcase := range testcases {
-		opt := &option{decode: true, encoding: testcase.encoding}
-		encodedInvalid := "FOO\nFal\n"
-		var inbuf bytes.Buffer
-		var outbuf bytes.Buffer
-		var outerrbuf bytes.Buffer
-		_, _ = inbuf.WriteString(encodedInvalid)
-		run(opt, &inbuf, &outbuf, &outerrbuf)
-		want := "invalid character 'O' in decoding a base58 string \"FOO\"\n"
-		want += "invalid character 'l' in decoding a base58 string \"Fal\"\n"
-		got := outerrbuf.String()
-		if got != want {
-			t.Errorf("run() outputs error %s, want %s", got, want)
-		}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			outStream := new(bytes.Buffer)
+			errStream := new(bytes.Buffer)
+			cli := cli{
+				inStream:  strings.NewReader(tc.input),
+				outStream: outStream,
+				errStream: errStream,
+			}
+			code := cli.run(tc.args)
+			if tc.err == "" {
+				assert.Equal(t, exitCodeOK, code)
+				assert.Equal(t, tc.expected, outStream.String())
+			} else {
+				assert.Equal(t, exitCodeErr, code)
+				assert.Equal(t, tc.err, errStream.String())
+			}
+		})
 	}
 }
