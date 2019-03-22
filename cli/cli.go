@@ -88,6 +88,7 @@ func (cli *cli) run(args []string) int {
 		file, err := os.Open(name)
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error())
+			status = exitCodeErr
 			continue
 		}
 		defer file.Close()
