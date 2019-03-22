@@ -50,8 +50,11 @@ type option struct {
 
 func (cli *cli) run(args []string) int {
 	var opts flagopts
-	args, err := flags.ParseArgs(&opts, args)
+	args, err := flags.NewParser(
+		&opts, flags.HelpFlag|flags.PassDoubleDash,
+	).ParseArgs(args)
 	if err != nil {
+		fmt.Fprintln(cli.errStream, err.Error())
 		return exitCodeErr
 	}
 	var inputFiles []string
