@@ -64,17 +64,14 @@ func (cli *cli) run(args []string) int {
 			inputFiles = append(inputFiles, name)
 		}
 	}
-	var outFile io.Writer
-	if opts.Output == "-" {
-		outFile = cli.outStream
-	} else {
+	if opts.Output != "-" {
 		file, err := os.Create(opts.Output)
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error())
 			return exitCodeErr
 		}
 		defer file.Close()
-		outFile = file
+		cli.outStream = file
 	}
 	status := exitCodeOK
 	opt := &option{decode: opts.Decode}
@@ -83,7 +80,7 @@ func (cli *cli) run(args []string) int {
 		return exitCodeErr
 	}
 	if len(inputFiles) == 0 {
-		if err := cli.runInternal(opt, cli.inStream, outFile); err != nil {
+		if err := cli.runInternal(opt, cli.inStream); err != nil {
 			fmt.Fprint(cli.errStream, err.Error())
 			status = exitCodeErr
 		}
@@ -96,7 +93,7 @@ func (cli *cli) run(args []string) int {
 			continue
 		}
 		defer file.Close()
-		if err := cli.runInternal(opt, file, outFile); err != nil {
+		if err := cli.runInternal(opt, file); err != nil {
 			fmt.Fprint(cli.errStream, err.Error())
 			status = exitCodeErr
 		}
@@ -104,7 +101,7 @@ func (cli *cli) run(args []string) int {
 	return status
 }
 
-func (cli *cli) runInternal(opt *option, in io.Reader, out io.Writer) error {
+func (cli *cli) runInternal(opt *option, in io.Reader) error {
 	scanner := bufio.NewScanner(in)
 	var result []byte
 	var errs []error
@@ -120,8 +117,8 @@ func (cli *cli) runInternal(opt *option, in io.Reader, out io.Writer) error {
 			errs = append(errs, err)
 			continue
 		}
-		out.Write(result)
-		out.Write([]byte{0x0a})
+		cli.outStream.Write(result)
+		cli.outStream.Write([]byte{0x0a})
 	}
 	if errs == nil {
 		return nil
