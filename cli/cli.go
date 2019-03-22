@@ -11,6 +11,10 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+const name = "base58"
+
+const version = "0.0.0"
+
 const (
 	exitCodeOK = iota
 	exitCodeErr
@@ -27,6 +31,7 @@ type flagopts struct {
 	Encoding string   `short:"e" long:"encoding" default:"flickr" description:"encoding (flickr, ripple or bitcoin)"`
 	Input    []string `short:"i" long:"input" default:"-" description:"input file"`
 	Output   string   `short:"o" long:"output" default:"-" description:"output file"`
+	Version  bool     `short:"v" long:"version" description:"print version"`
 }
 
 func (opt *flagopts) getEncoding() (*base58.Encoding, error) {
@@ -52,6 +57,10 @@ func (cli *cli) run(args []string) int {
 	if err != nil {
 		fmt.Fprintln(cli.errStream, err.Error())
 		return exitCodeErr
+	}
+	if opts.Version {
+		fmt.Fprintf(cli.outStream, "%s %s\n", name, version)
+		return exitCodeOK
 	}
 	var inputFiles []string
 	for _, name := range append(opts.Input, args...) {
