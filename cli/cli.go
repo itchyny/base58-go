@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -84,9 +83,8 @@ func (cli *cli) run(args []string) int {
 		return exitCodeErr
 	}
 	if len(inputFiles) == 0 {
-		if err := cli.runInternal(opts.Decode, encoding, cli.inStream); err != nil {
-			fmt.Fprint(cli.errStream, err.Error())
-			status = exitCodeErr
+		if s := cli.runInternal(opts.Decode, encoding, cli.inStream); s != exitCodeOK {
+			status = s
 		}
 	}
 	for _, name := range inputFiles {
@@ -97,18 +95,17 @@ func (cli *cli) run(args []string) int {
 			continue
 		}
 		defer file.Close()
-		if err := cli.runInternal(opts.Decode, encoding, file); err != nil {
-			fmt.Fprint(cli.errStream, err.Error())
-			status = exitCodeErr
+		if s := cli.runInternal(opts.Decode, encoding, file); s != exitCodeOK {
+			status = s
 		}
 	}
 	return status
 }
 
-func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader) error {
+func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader) int {
 	scanner := bufio.NewScanner(in)
+	status := exitCodeOK
 	var result []byte
-	var errs []error
 	var err error
 	for scanner.Scan() {
 		src := scanner.Bytes()
@@ -118,18 +115,12 @@ func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader
 			result, err = encoding.Encode(src)
 		}
 		if err != nil {
-			errs = append(errs, err)
+			fmt.Fprintln(cli.errStream, err.Error()) // should print error each line
+			status = exitCodeErr
 			continue
 		}
 		cli.outStream.Write(result)
 		cli.outStream.Write([]byte{0x0a})
 	}
-	if errs == nil {
-		return nil
-	}
-	var errStr string
-	for _, err := range errs {
-		errStr += err.Error() + "\n"
-	}
-	return errors.New(errStr)
+	return status
 }
