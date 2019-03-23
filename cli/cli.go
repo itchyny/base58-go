@@ -26,26 +26,11 @@ type cli struct {
 }
 
 type flagopts struct {
-	Decode   bool     `short:"D" long:"decode" description:"decodes input"`
-	Encoding string   `short:"e" long:"encoding" default:"flickr" description:"encoding (flickr, ripple or bitcoin)"`
-	Input    []string `short:"i" long:"input" default:"-" description:"input file"`
-	Output   string   `short:"o" long:"output" default:"-" description:"output file"`
-	Version  bool     `short:"v" long:"version" description:"print version"`
-}
-
-func (opt *flagopts) getEncoding() (*base58.Encoding, error) {
-	var encoding *base58.Encoding
-	switch opt.Encoding {
-	case "flickr":
-		encoding = base58.FlickrEncoding
-	case "ripple":
-		encoding = base58.RippleEncoding
-	case "bitcoin":
-		encoding = base58.BitcoinEncoding
-	default:
-		return nil, fmt.Errorf("unknown encoding: %s", opt.Encoding)
-	}
-	return encoding, nil
+	Decode   bool             `short:"D" long:"decode" description:"decodes input"`
+	Encoding *base58.Encoding `short:"e" long:"encoding" default:"flickr" choice:"flickr" choice:"ripple" choice:"bitcoin" description:"encoding"`
+	Input    []string         `short:"i" long:"input" default:"-" description:"input file"`
+	Output   string           `short:"o" long:"output" default:"-" description:"output file"`
+	Version  bool             `short:"v" long:"version" description:"print version"`
 }
 
 func (cli *cli) run(args []string) int {
@@ -77,18 +62,13 @@ func (cli *cli) run(args []string) int {
 		cli.outStream = file
 	}
 	status := exitCodeOK
-	var encoding *base58.Encoding
-	if encoding, err = opts.getEncoding(); err != nil {
-		fmt.Fprintln(cli.errStream, err.Error())
-		return exitCodeErr
-	}
 	if len(inputFiles) == 0 {
-		if s := cli.runInternal(opts.Decode, encoding, cli.inStream); s != exitCodeOK {
+		if s := cli.runInternal(opts.Decode, opts.Encoding, cli.inStream); s != exitCodeOK {
 			status = s
 		}
 	}
 	for _, name := range inputFiles {
-		if s := cli.runFile(opts.Decode, encoding, name); s != exitCodeOK {
+		if s := cli.runFile(opts.Decode, opts.Encoding, name); s != exitCodeOK {
 			status = s
 		}
 	}

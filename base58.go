@@ -98,3 +98,18 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 	}
 	return n.Append(zeros, 10), nil
 }
+
+// UnmarshalFlag implements flags.Unmarshaler
+func (enc *Encoding) UnmarshalFlag(value string) error {
+	switch value {
+	case "flickr":
+		*enc = *FlickrEncoding
+	case "ripple":
+		*enc = *RippleEncoding
+	case "bitcoin":
+		*enc = *BitcoinEncoding
+	default:
+		return fmt.Errorf("unknown encoding: %s", value)
+	}
+	return nil
+}

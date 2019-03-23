@@ -263,8 +263,7 @@ invalid character 'l' in decoding a base58 string "Fal"
 		{
 			name: "encoding error",
 			args: []string{"--encoding", "foo"},
-			err: `unknown encoding: foo
-`,
+			err:  "Invalid value `foo' for option `-e, --encoding'. Allowed values are: flickr, ripple or bitcoin\n",
 		},
 		{
 			name: "input error",
