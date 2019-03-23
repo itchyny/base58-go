@@ -88,18 +88,21 @@ func (cli *cli) run(args []string) int {
 		}
 	}
 	for _, name := range inputFiles {
-		file, err := os.Open(name)
-		if err != nil {
-			fmt.Fprintln(cli.errStream, err.Error())
-			status = exitCodeErr
-			continue
-		}
-		defer file.Close()
-		if s := cli.runInternal(opts.Decode, encoding, file); s != exitCodeOK {
+		if s := cli.runFile(opts.Decode, encoding, name); s != exitCodeOK {
 			status = s
 		}
 	}
 	return status
+}
+
+func (cli *cli) runFile(decode bool, encoding *base58.Encoding, name string) int {
+	file, err := os.Open(name)
+	if err != nil {
+		fmt.Fprintln(cli.errStream, err.Error())
+		return exitCodeErr
+	}
+	defer file.Close()
+	return cli.runInternal(decode, encoding, file)
 }
 
 func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader) int {
