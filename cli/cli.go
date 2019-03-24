@@ -39,6 +39,10 @@ func (cli *cli) run(args []string) int {
 		&opts, flags.HelpFlag|flags.PassDoubleDash,
 	).ParseArgs(args)
 	if err != nil {
+		if err, ok := err.(*flags.Error); ok && err.Type == flags.ErrHelp {
+			fmt.Fprintln(cli.outStream, err.Error())
+			return exitCodeOK
+		}
 		fmt.Fprintln(cli.errStream, err.Error())
 		return exitCodeErr
 	}
