@@ -19,7 +19,7 @@ deps:
 
 .PHONY: cross
 cross: crossdeps
-	goxz -n $(BIN) -build-ldflags=$(BUILD_LDFLAGS) ./cmd/$(BIN)
+	goxz -n $(BIN) -include _$(BIN) -build-ldflags=$(BUILD_LDFLAGS) ./cmd/$(BIN)
 
 .PHONY: crossdeps
 crossdeps: deps
