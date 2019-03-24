@@ -4,7 +4,7 @@ _base58()
 {
   _arguments -C \
     '(-D --decode)'{-D,--decode}'[decodes input]' \
-    '(-e --encoding)'{-e,--encoding}'=-[encoding name (default: flickr)]:base58:(flickr ripple bitcoin)' \
+    '(-e --encoding)'{-e,--encoding}'=-[encoding name (default: flickr)]:encoding name:(flickr ripple bitcoin)' \
     '(-i --input)'{-i,--input}'[input file]' \
     '(-o --output)'{-o,--output}'[output file]' \
     '(-v --version)'{-v,--version}'[print version]' \
