@@ -27,7 +27,7 @@ type cli struct {
 
 type flagopts struct {
 	Decode   bool             `short:"D" long:"decode" description:"decodes input"`
-	Encoding *base58.Encoding `short:"e" long:"encoding" default:"flickr" choice:"flickr" choice:"ripple" choice:"bitcoin" description:"encoding"`
+	Encoding *base58.Encoding `short:"e" long:"encoding" default:"flickr" choice:"flickr" choice:"ripple" choice:"bitcoin" description:"encoding name"`
 	Input    []string         `short:"i" long:"input" default:"-" description:"input file"`
 	Output   string           `short:"o" long:"output" default:"-" description:"output file"`
 	Version  bool             `short:"v" long:"version" description:"print version"`
