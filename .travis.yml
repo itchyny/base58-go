@@ -4,17 +4,3 @@ go:
 script:
   - make test
   - make lint
-
-before_deploy:
-  - make cross
-deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key:
-    secure: mHCOprvP8PJHighdfrsIzdlQQqWgHlaK6hSg1QcusyensP7UF40jxh9uGCmgApSvx/xqy+66CbQL5KhJFi6J36w//6EFY6c1zT8KilYyZek7CaQWHPpdn20cI1+cG6/Uk2M6i50X6Yz0iE8lhrKbTQYhGTEoi9G1wjUb0enL1kcFUPe91Ljd/R/iGuB/+TyRuurf3+McNQ4+sq0VMFkO9GXAsHPgZuTG51b6rzimmmgxibW3HaL03Wnvvd6ieLrl/bDbjVZDDs4kgqiFgfK9IaNGVLWFX6m/GYZf/JyyqLXFKfFRVO49VRiqmrgFq01YwAW99Ccdph0P2M5/BsQeBRxlVVWZD1bjmZLCVmo5SQQM018x3k0c4qK8uEzkP9H3xQn3jQpY5LbkRva4Wm+h23Pvbz5A3bjXgrTYxerqOIl6ItPnvmBa6OgXG/Cfb/sth2Gf9AJFvwqIZLz6Y9oDKyaj1lwn+zxNuVr3DTJp/JF+YfXOEljEr+9m4Ufb3jUhUsTKn+XZx2752vzeu3xOGzOI6rr3NeD1BTpSLzeG2Dn8WE7EEDrNmHQFgdMn8lc728j/wpgbLeyParjsG8pRqwFmDuYkzdiJEJC04yW01vCAsfXA5KLVvbfz/7zVw47toFL6KygBU9uZIjKVadNiXSm/cp5n9GZ62Fzf0xAjS0Y=
-  file: goxz/*
-  file_glob: true
-  on:
-    repo: itchyny/base58-go
-    tags: true
-    all_branches: false
