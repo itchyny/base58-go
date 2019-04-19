@@ -266,6 +266,11 @@ invalid character 'l' in decoding a base58 string "Fal"
 			err:  "Invalid value `foo' for option `-e, --encoding'. Allowed values are: flickr, ripple or bitcoin\n",
 		},
 		{
+			name:  "negative number error",
+			input: "-100",
+			err:   "expecting a non-negative number in base58 encoding but got -100\n",
+		},
+		{
 			name: "input error",
 			args: []string{"--input"},
 			err:  "expected argument for flag `-i, --input'\n",

@@ -70,7 +70,7 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 			reverse(bytes[zerocnt:])
 			return bytes, nil
 		default:
-			return nil, fmt.Errorf("expecting a positive number in base58 encoding but got %q", n)
+			return nil, fmt.Errorf("expecting a non-negative number in base58 encoding but got %s", n)
 		}
 	}
 }
