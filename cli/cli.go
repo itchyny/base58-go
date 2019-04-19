@@ -2,9 +2,11 @@ package cli
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"unicode"
 
 	"github.com/itchyny/base58-go"
 	"github.com/jessevdk/go-flags"
@@ -97,9 +99,9 @@ func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader
 	for scanner.Scan() {
 		src := scanner.Bytes()
 		if decode {
-			result, err = encoding.Decode(src)
+			result, err = processLine(src, encoding.Decode)
 		} else {
-			result, err = encoding.Encode(src)
+			result, err = processLine(src, encoding.Encode)
 		}
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error()) // should print error each line
@@ -110,4 +112,36 @@ func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader
 		cli.outStream.Write([]byte{0x0a})
 	}
 	return status
+}
+
+func processLine(src []byte, f func([]byte) ([]byte, error)) ([]byte, error) {
+	var i, j int
+	var res []byte
+	for j < len(src) {
+		j = bytes.IndexFunc(src[i:], unicode.IsSpace)
+		if j >= 0 {
+			j += i
+		} else {
+			j = len(src)
+		}
+		got, err := f(src[i:j])
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, got...)
+		if j == len(src) {
+			break
+		}
+		i = bytes.IndexFunc(src[j:], func(r rune) bool { return !unicode.IsSpace(r) })
+		if i >= 0 {
+			i += j
+		} else {
+			i = len(src)
+		}
+		res = append(res, src[j:i]...)
+		if i == len(src) {
+			break
+		}
+	}
+	return res, nil
 }

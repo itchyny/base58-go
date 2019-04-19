@@ -139,6 +139,18 @@ expecting a number but got "bar"
 `,
 		},
 		{
+			name: "encode multiple values in each line",
+			args: []string{},
+			input: `
+0 32 64		  		000	512
+   1024 16777216
+`,
+			expected: `
+1 y 27		  		111	9Q
+   iE 2tZhm
+`,
+		},
+		{
 			name: "decode",
 			args: []string{"-D"},
 			input: `
@@ -248,6 +260,18 @@ jpXCZedGfVR
 00068719476736
 18446744073709551616
 79228162514264337593543950336
+`,
+		},
+		{
+			name: "decode multiple values in each line",
+			args: []string{"-D"},
+			input: `
+1 y 27		  		111	9Q
+   iE 2tZhm
+`,
+			expected: `
+0 32 64		  		000	512
+   1024 16777216
 `,
 		},
 		{
