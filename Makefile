@@ -10,7 +10,7 @@ all: clean build
 
 .PHONY: build
 build:
-	go build -ldflags=$(BUILD_LDFLAGS) -o build/$(BIN) ./cmd/$(BIN)
+	go build -ldflags=$(BUILD_LDFLAGS) -o $(BIN) ./cmd/$(BIN)
 
 .PHONY: install
 install:
@@ -44,7 +44,7 @@ $(GOBIN)/golint:
 
 .PHONY: clean
 clean:
-	rm -rf build goxz
+	rm -rf $(BIN) goxz
 	go clean
 
 .PHONY: bump
