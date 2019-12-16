@@ -14,7 +14,7 @@ import (
 
 const name = "base58"
 
-const version = "0.0.5"
+const version = "0.1.0"
 
 const (
 	exitCodeOK = iota
