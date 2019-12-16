@@ -57,10 +57,6 @@ bump: $(GOBIN)/gobump
 	git push origin master
 	git push origin "refs/tags/v$(VERSION)"
 
-.PHONY: crossdocker
-crossdocker:
-	docker run --rm -v `pwd`:"/$${PWD##*/}" -w "/$${PWD##*/}" golang make cross
-
 .PHONY: upload
 upload: $(GOBIN)/ghr
 	ghr "v$(VERSION)" goxz
@@ -69,4 +65,4 @@ $(GOBIN)/ghr:
 	cd && go get github.com/tcnksm/ghr
 
 .PHONY: release
-release: test lint clean bump crossdocker upload
+release: test lint clean bump upload
