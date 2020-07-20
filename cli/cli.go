@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"unicode"
 
 	"github.com/itchyny/base58-go"
@@ -15,6 +16,8 @@ import (
 const name = "base58"
 
 const version = "0.1.0"
+
+var revision = "HEAD"
 
 const (
 	exitCodeOK = iota
@@ -49,7 +52,7 @@ func (cli *cli) run(args []string) int {
 		return exitCodeErr
 	}
 	if opts.Version {
-		fmt.Fprintf(cli.outStream, "%s %s\n", name, version)
+		fmt.Fprintf(cli.outStream, "%s %s (rev: %s/%s)\n", name, version, revision, runtime.Version())
 		return exitCodeOK
 	}
 	var inputFiles []string
