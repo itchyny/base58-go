@@ -1,8 +1,6 @@
 package base58
 
-import (
-	"testing"
-)
+import "testing"
 
 type testcase struct {
 	encoding  *Encoding

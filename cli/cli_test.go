@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCliRun(t *testing.T) {
@@ -319,13 +317,21 @@ invalid character 'l' in decoding a base58 string "Fal"
 				outStream: outStream,
 				errStream: errStream,
 			}
-			code := cli.run(tc.args)
+			got := cli.run(tc.args)
 			if tc.err == "" {
-				assert.Equal(t, exitCodeOK, code)
-				assert.Equal(t, tc.expected, outStream.String())
+				if expected := exitCodeOK; got != expected {
+					t.Errorf("expected: %v\ngot: %v", expected, got)
+				}
+				if got, expected := outStream.String(), tc.expected; got != expected {
+					t.Errorf("expected: %v\ngot: %v", expected, got)
+				}
 			} else {
-				assert.Equal(t, exitCodeErr, code)
-				assert.Equal(t, tc.err, errStream.String())
+				if expected := exitCodeErr; got != expected {
+					t.Errorf("expected: %v\ngot: %v", expected, got)
+				}
+				if got, expected := errStream.String(), tc.err; got != expected {
+					t.Errorf("expected: %v\ngot: %v", expected, got)
+				}
 			}
 		})
 	}
