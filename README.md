@@ -1,14 +1,13 @@
-# base58-go [![CI Status][ci-badge]][ci-url] [![Go Report Card][goreportcard-badge]][goreportcard-url] [![MIT License][license-badge]][license-url] [![PkgGoDev][pkggodev-badge]][pkggodev-url]
+# base58-go
+[![CI Status](https://github.com/itchyny/base58-go/workflows/CI/badge.svg)](https://github.com/itchyny/base58-go/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/itchyny/base58-go)](https://goreportcard.com/report/github.com/itchyny/base58-go)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/itchyny/base58-go/blob/master/LICENSE)
+[![release](https://img.shields.io/github/release/itchyny/base58-go/all.svg)](https://github.com/itchyny/base58-go/releases)
+[![pkg.go.dev](https://pkg.go.dev/badge/github.com/itchyny/base58-go)](https://pkg.go.dev/github.com/itchyny/base58-go)
 
 ### Base58 encoding/decoding package in Go
-This is a Go language package for encoding/decoding base58 strings.
-This package supports multiple encodings.
-
-[tv42/base58](https://github.com/tv42/base58) is an existing implementation.
-But I do not like what the package provides; the interface of the package,
-the command-line interface, the pull request of configuring the encoding
-is not merged for months, leading zeros and empty string are not encoded
-correctly. So I created a new package and command line interface.
+This is a Go language package for encoding and decoding base58 strings.
+This package supports multiple encodings, flickr, ripple and bitcoin.
 
 ## Package Usage
 ```go
@@ -48,7 +47,7 @@ brew install itchyny/tap/base58
 
 ### Build from source
 ```bash
-go get -u github.com/itchyny/base58-go/cmd/base58
+go get github.com/itchyny/base58-go/cmd/base58
 ```
 
 ### Basic usage
@@ -85,12 +84,3 @@ itchyny (https://github.com/itchyny)
 
 ## License
 This software is released under the MIT License, see LICENSE.
-
-[ci-url]: https://github.com/itchyny/base58-go/actions
-[ci-badge]: https://github.com/itchyny/base58-go/workflows/CI/badge.svg
-[goreportcard-url]: https://goreportcard.com/report/github.com/itchyny/base58-go
-[goreportcard-badge]: https://goreportcard.com/badge/github.com/itchyny/base58-go
-[license-url]: https://github.com/itchyny/base58-go/blob/master/LICENSE
-[license-badge]: http://img.shields.io/badge/license-MIT-blue.svg
-[pkggodev-url]: https://pkg.go.dev/github.com/itchyny/base58-go
-[pkggodev-badge]: https://pkg.go.dev/badge/github.com/itchyny/base58-go
