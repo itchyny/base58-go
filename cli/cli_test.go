@@ -132,8 +132,8 @@ jpXCZedGfVR
 			input: `foo
 bar
 `,
-			err: `expecting a number but got "foo"
-expecting a number but got "bar"
+			err: `expecting a non-negative number but got "foo"
+expecting a non-negative number but got "bar"
 `,
 		},
 		{
@@ -289,8 +289,9 @@ invalid character 'l' in decoding a base58 string "Fal"
 		},
 		{
 			name:  "negative number error",
-			input: "-100",
-			err:   "expecting a non-negative number in base58 encoding but got -100\n",
+			input: "-100000000000000000000",
+			err: `expecting a non-negative number but got "-100000000000000000000"
+`,
 		},
 		{
 			name: "input error",

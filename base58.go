@@ -38,20 +38,28 @@ var (
 	radix = big.NewInt(58)
 )
 
+const radixInt = uint64(58)
+
 func reverse(data []byte) {
 	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
 		data[i], data[j] = data[j], data[i]
 	}
 }
 
+type encodeError []byte
+
+func (err encodeError) Error() string {
+	return fmt.Sprintf("expecting a non-negative number but got %q", []byte(err))
+}
+
 // Encode encodes the number represented in the byte array base 10.
 func (enc *Encoding) Encode(src []byte) ([]byte, error) {
-	if len(src) == 0 {
-		return []byte{}, nil
+	if len(src) < 20 { // 10^19 < math.MaxUint64 < 10^20
+		return enc.encodeSmall(src)
 	}
 	n, ok := new(big.Int).SetString(string(src), 10)
 	if !ok {
-		return nil, fmt.Errorf("expecting a number but got %q", src)
+		return nil, encodeError(src)
 	}
 	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
@@ -72,9 +80,39 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 			reverse(bytes[zerocnt:])
 			return bytes, nil
 		default:
-			return nil, fmt.Errorf("expecting a non-negative number in base58 encoding but got %s", n)
+			return nil, encodeError(src)
 		}
 	}
+}
+
+func (enc *Encoding) encodeSmall(src []byte) ([]byte, error) {
+	bytes := make([]byte, 0, len(src))
+	for _, c := range src {
+		if c == '0' {
+			bytes = append(bytes, enc.alphabet[0])
+		} else {
+			break
+		}
+	}
+	if len(bytes) == len(src) {
+		return bytes, nil
+	}
+	n, err := parseUint64(src[len(bytes):])
+	if err != nil {
+		return nil, err
+	}
+	return enc.appendEncodeUint64(bytes, n), nil
+}
+
+func (enc *Encoding) appendEncodeUint64(buf []byte, n uint64) []byte {
+	zerocnt := len(buf)
+	var mod uint64
+	for n > 0 {
+		n, mod = n/radixInt, n%radixInt
+		buf = append(buf, enc.alphabet[mod])
+	}
+	reverse(buf[zerocnt:])
+	return buf
 }
 
 // Decode decodes the base58 encoded bytes.
@@ -114,4 +152,16 @@ func (enc *Encoding) UnmarshalFlag(value string) error {
 		return fmt.Errorf("unknown encoding: %s", value)
 	}
 	return nil
+}
+
+func parseUint64(src []byte) (uint64, error) {
+	var n uint64
+	for _, c := range src {
+		if '0' <= c && c <= '9' {
+			n = n*10 + uint64(c&0xF)
+		} else {
+			return 0, encodeError(src)
+		}
+	}
+	return n, nil
 }
