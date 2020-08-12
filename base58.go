@@ -158,11 +158,24 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 	var i int64
 	for _, c := range src {
 		if i = enc.decodeMap[c]; i < 0 {
-			return nil, fmt.Errorf("invalid character '%c' in decoding a base58 string \"%s\"", c, src)
+			return nil, fmt.Errorf("invalid character '%c' in decoding a base58 string %q", c, src)
 		}
 		n.Add(n.Mul(n, radix), big.NewInt(i))
 	}
 	return n.Append(zeros, 10), nil
+}
+
+// DecodeUint64 decodes the base58 encoded bytes to an unsigned integer.
+func (enc *Encoding) DecodeUint64(src []byte) (uint64, error) {
+	var n uint64
+	var i int64
+	for _, c := range src {
+		if i = enc.decodeMap[c]; i < 0 {
+			return 0, fmt.Errorf("invalid character '%c' in decoding a base58 string %q", c, src)
+		}
+		n = n*radixInt + uint64(i)
+	}
+	return n, nil
 }
 
 // UnmarshalFlag implements flags.Unmarshaler

@@ -115,6 +115,22 @@ func TestDecode(t *testing.T) {
 	}
 }
 
+func TestDecodeUint64(t *testing.T) {
+	for _, testcase := range testcases {
+		for i := 0; i < 100; i++ {
+			n := rand.Uint64() % uint64(math.Pow10(int(i/5)))
+			src := testcase.encoding.EncodeUint64(n)
+			got, err := testcase.encoding.DecodeUint64(src)
+			if err != nil {
+				t.Fatalf("Error occurred while decoding %s (%s).", src, err)
+			}
+			if got != n {
+				t.Errorf("DecodeUint64(%s) = %d, want %d", src, got, n)
+			}
+		}
+	}
+}
+
 func BenchmarkEncode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, testcase := range testcases {
