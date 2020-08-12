@@ -33,10 +33,7 @@ var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8o
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
-var (
-	zero  = new(big.Int)
-	radix = big.NewInt(58)
-)
+var radix = big.NewInt(58)
 
 const radixInt = uint64(58)
 
@@ -57,10 +54,6 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 	if len(src) < 20 { // 10^19 < math.MaxUint64 < 10^20
 		return enc.encodeSmall(src)
 	}
-	n, ok := new(big.Int).SetString(string(src), 10)
-	if !ok {
-		return nil, encodeError(src)
-	}
 	bytes := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
@@ -70,19 +63,44 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 		}
 	}
 	zerocnt := len(bytes)
-	mod := new(big.Int)
-	for {
-		switch n.Cmp(zero) {
-		case 1:
-			n.DivMod(n, radix, mod)
-			bytes = append(bytes, enc.alphabet[mod.Int64()])
-		case 0:
-			reverse(bytes[zerocnt:])
-			return bytes, nil
-		default:
+	const slice = 17 // radix * 10^slice < math.MaxUint64
+	xs := make([]uint64, (len(src)+(slice-1))/slice)
+	j, k := len(src)-slice, len(src)
+	var err error
+	for i := len(xs) - 1; i >= 0; i-- {
+		if j < 0 {
+			j = 0
+		}
+		xs[i], err = parseUint64(src[j:k])
+		if err != nil {
 			return nil, encodeError(src)
 		}
+		j, k = j-slice, j
 	}
+L:
+	for len(xs) > 1 || xs[0] > 0 {
+		for i, x := range xs {
+			if x != 0 {
+				if i > 0 {
+					xs = xs[i:]
+				}
+				if len(xs) == 0 {
+					break L
+				}
+				break
+			}
+		}
+		var mod uint64
+		for i, x := range xs {
+			if i > 0 {
+				x += mod * 100000000000000000 // 10^slice
+			}
+			xs[i], mod = x/radixInt, x%radixInt
+		}
+		bytes = append(bytes, enc.alphabet[int(mod)])
+	}
+	reverse(bytes[zerocnt:])
+	return bytes, nil
 }
 
 func (enc *Encoding) encodeSmall(src []byte) ([]byte, error) {
