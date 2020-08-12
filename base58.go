@@ -33,7 +33,10 @@ var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8o
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
-var radix = big.NewInt(58)
+var (
+	zero  = new(big.Int)
+	radix = big.NewInt(58)
+)
 
 func reverse(data []byte) {
 	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
@@ -60,7 +63,6 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 	}
 	zerocnt := len(bytes)
 	mod := new(big.Int)
-	zero := big.NewInt(0)
 	for {
 		switch n.Cmp(zero) {
 		case 1:
