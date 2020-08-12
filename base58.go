@@ -3,6 +3,7 @@ package base58
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 )
 
 // An Encoding is a radix 58 encoding/decoding scheme.
@@ -146,13 +147,20 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 	if len(src) == 0 {
 		return []byte{}, nil
 	}
-	var zeros []byte
+	buf := make([]byte, 0, len(src)*2)
 	for i, c := range src {
 		if c == enc.alphabet[0] && i < len(src)-1 {
-			zeros = append(zeros, '0')
+			buf = append(buf, '0')
 		} else {
 			break
 		}
+	}
+	if len(src) < 11 { // 58^10 < math.MaxUint64 < 58^11
+		n, err := enc.DecodeUint64(src)
+		if err != nil {
+			return nil, err
+		}
+		return strconv.AppendUint(buf, n, 10), nil
 	}
 	n := new(big.Int)
 	var i int64
@@ -162,7 +170,7 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 		}
 		n.Add(n.Mul(n, radix), big.NewInt(i))
 	}
-	return n.Append(zeros, 10), nil
+	return n.Append(buf, 10), nil
 }
 
 // DecodeUint64 decodes the base58 encoded bytes to an unsigned integer.
