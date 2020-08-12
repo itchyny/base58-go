@@ -104,6 +104,14 @@ func (enc *Encoding) encodeSmall(src []byte) ([]byte, error) {
 	return enc.appendEncodeUint64(bytes, n), nil
 }
 
+// EncodeUint64 encodes the unsigned integer.
+func (enc *Encoding) EncodeUint64(n uint64) []byte {
+	if n == 0 {
+		return []byte{enc.alphabet[0]}
+	}
+	return enc.appendEncodeUint64(make([]byte, 0, 11), n)
+}
+
 func (enc *Encoding) appendEncodeUint64(buf []byte, n uint64) []byte {
 	zerocnt := len(buf)
 	var mod uint64

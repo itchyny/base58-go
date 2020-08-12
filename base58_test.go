@@ -1,6 +1,11 @@
 package base58
 
-import "testing"
+import (
+	"math"
+	"math/rand"
+	"strconv"
+	"testing"
+)
 
 type testcase struct {
 	encoding  *Encoding
@@ -75,6 +80,22 @@ func TestEncode(t *testing.T) {
 			}
 			if string(got) != pair.encoded {
 				t.Errorf("Encode(%s) = %s, want %s", pair.decoded, string(got), pair.encoded)
+			}
+		}
+	}
+}
+
+func TestEncodeUint64(t *testing.T) {
+	for _, testcase := range testcases {
+		for i := 0; i < 100; i++ {
+			n := rand.Uint64() % uint64(math.Pow10(int(i/5)))
+			got := testcase.encoding.EncodeUint64(n)
+			expected, err := testcase.encoding.Encode([]byte(strconv.FormatUint(n, 10)))
+			if err != nil {
+				t.Fatalf("Error occurred while encoding %d (%s).", n, err)
+			}
+			if string(got) != string(expected) {
+				t.Errorf("EncodeUint64(%d) = %s, want %s", n, got, expected)
 			}
 		}
 	}
