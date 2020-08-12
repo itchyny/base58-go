@@ -52,18 +52,18 @@ func (err encodeError) Error() string {
 
 // Encode encodes the number represented in the byte array base 10.
 func (enc *Encoding) Encode(src []byte) ([]byte, error) {
-	if len(src) < 20 { // 10^19 < math.MaxUint64 < 10^20
-		return enc.encodeSmall(src)
-	}
-	bytes := make([]byte, 0, len(src))
+	buf := make([]byte, 0, len(src))
 	for _, c := range src {
 		if c == '0' {
-			bytes = append(bytes, enc.alphabet[0])
+			buf = append(buf, enc.alphabet[0])
 		} else {
 			break
 		}
 	}
-	zerocnt := len(bytes)
+	if len(src) < 20 { // 10^19 < math.MaxUint64 < 10^20
+		return enc.encodeSmall(buf, src)
+	}
+	zerocnt := len(buf)
 	const slice = 17 // radix * 10^slice < math.MaxUint64
 	xs := make([]uint64, (len(src)+(slice-1))/slice)
 	j, k := len(src)-slice, len(src)
@@ -98,29 +98,21 @@ L:
 			}
 			xs[i], mod = x/radixInt, x%radixInt
 		}
-		bytes = append(bytes, enc.alphabet[int(mod)])
+		buf = append(buf, enc.alphabet[int(mod)])
 	}
-	reverse(bytes[zerocnt:])
-	return bytes, nil
+	reverse(buf[zerocnt:])
+	return buf, nil
 }
 
-func (enc *Encoding) encodeSmall(src []byte) ([]byte, error) {
-	bytes := make([]byte, 0, len(src))
-	for _, c := range src {
-		if c == '0' {
-			bytes = append(bytes, enc.alphabet[0])
-		} else {
-			break
-		}
+func (enc *Encoding) encodeSmall(buf, src []byte) ([]byte, error) {
+	if len(buf) == len(src) {
+		return buf, nil
 	}
-	if len(bytes) == len(src) {
-		return bytes, nil
-	}
-	n, err := parseUint64(src[len(bytes):])
+	n, err := parseUint64(src[len(buf):])
 	if err != nil {
 		return nil, err
 	}
-	return enc.appendEncodeUint64(bytes, n), nil
+	return enc.appendEncodeUint64(buf, n), nil
 }
 
 // EncodeUint64 encodes the unsigned integer.
