@@ -14,7 +14,7 @@ type Encoding struct {
 // New creates a new base58 encoding.
 func New(alphabet []byte) *Encoding {
 	enc := &Encoding{}
-	copy(enc.alphabet[:], alphabet[:])
+	copy(enc.alphabet[:], alphabet)
 	for i := range enc.decodeMap {
 		enc.decodeMap[i] = -1
 	}
