@@ -34,7 +34,7 @@ var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8o
 var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 const (
-	radixInt = uint64(58)
+	radix    = uint64(58)
 	slice    = 17                 // radix * 10^slice < math.MaxUint64
 	overflow = 100000000000000000 // 10^slice
 )
@@ -96,7 +96,7 @@ L:
 			if i > 0 {
 				x += mod * overflow
 			}
-			xs[i], mod = x/radixInt, x%radixInt
+			xs[i], mod = x/radix, x%radix
 		}
 		buf = append(buf, enc.alphabet[int(mod)])
 	}
@@ -127,7 +127,7 @@ func (enc *Encoding) appendEncodeUint64(buf []byte, n uint64) []byte {
 	zerocnt := len(buf)
 	var mod uint64
 	for n > 0 {
-		n, mod = n/radixInt, n%radixInt
+		n, mod = n/radix, n%radix
 		buf = append(buf, enc.alphabet[mod])
 	}
 	reverse(buf[zerocnt:])
@@ -162,7 +162,7 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 		}
 		carry := uint64(i)
 		for j, x := range xs {
-			if x = x*radixInt + carry; x < overflow {
+			if x = x*radix + carry; x < overflow {
 				xs[j], carry = x, 0
 			} else {
 				xs[j], carry = x%overflow, x/overflow
@@ -192,7 +192,7 @@ func (enc *Encoding) DecodeUint64(src []byte) (uint64, error) {
 		if i = enc.decodeMap[c]; i < 0 {
 			return 0, fmt.Errorf("invalid character '%c' in decoding a base58 string %q", c, src)
 		}
-		n = n*radixInt + uint64(i)
+		n = n*radix + uint64(i)
 	}
 	return n, nil
 }
