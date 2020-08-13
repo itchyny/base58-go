@@ -2,7 +2,6 @@ package base58
 
 import (
 	"fmt"
-	"math/big"
 	"strconv"
 )
 
@@ -34,9 +33,11 @@ var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8o
 // BitcoinEncoding is the encoding scheme used for Bitcoin addresses.
 var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
-var radix = big.NewInt(58)
-
-const radixInt = uint64(58)
+const (
+	radixInt = uint64(58)
+	slice    = 17                 // radix * 10^slice < math.MaxUint64
+	overflow = 100000000000000000 // 10^slice
+)
 
 func reverse(data []byte) {
 	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
@@ -64,7 +65,6 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 		return enc.encodeSmall(buf, src)
 	}
 	zerocnt := len(buf)
-	const slice = 17 // radix * 10^slice < math.MaxUint64
 	xs := make([]uint64, (len(src)+(slice-1))/slice)
 	j, k := len(src)-slice, len(src)
 	var err error
@@ -94,7 +94,7 @@ L:
 		var mod uint64
 		for i, x := range xs {
 			if i > 0 {
-				x += mod * 100000000000000000 // 10^slice
+				x += mod * overflow
 			}
 			xs[i], mod = x/radixInt, x%radixInt
 		}
@@ -154,15 +154,34 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 		}
 		return strconv.AppendUint(buf, n, 10), nil
 	}
-	n := new(big.Int)
+	xs := make([]uint64, 0, len(src)/9+1) // > log_{overflow}(58^len(src))+1
 	var i int64
 	for _, c := range src {
 		if i = enc.decodeMap[c]; i < 0 {
 			return nil, fmt.Errorf("invalid character '%c' in decoding a base58 string %q", c, src)
 		}
-		n.Add(n.Mul(n, radix), big.NewInt(i))
+		carry := uint64(i)
+		for j, x := range xs {
+			if x = x*radixInt + carry; x < overflow {
+				xs[j], carry = x, 0
+			} else {
+				xs[j], carry = x%overflow, x/overflow
+			}
+		}
+		if carry > 0 {
+			xs = append(xs, carry)
+		}
 	}
-	return n.Append(buf, 10), nil
+	for i := len(xs) - 1; i >= 0; i-- {
+		x := xs[i]
+		if i < len(xs)-1 {
+			for k := uint64(overflow / 10); x < k; k /= 10 {
+				buf = append(buf, '0')
+			}
+		}
+		buf = strconv.AppendUint(buf, x, 10)
+	}
+	return buf, nil
 }
 
 // DecodeUint64 decodes the base58 encoded bytes to an unsigned integer.
