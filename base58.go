@@ -61,8 +61,8 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 			break
 		}
 	}
-	if len(src) < 20 { // 10^19 < math.MaxUint64 < 10^20
-		return enc.encodeSmall(buf, src)
+	if len(src[len(buf):]) < 20 { // 10^19 < math.MaxUint64 < 10^20
+		return enc.encodeSmall(buf, src[len(buf):])
 	}
 	zerocnt := len(buf)
 	xs := make([]uint64, (len(src)+(slice-1))/slice)
@@ -105,10 +105,10 @@ L:
 }
 
 func (enc *Encoding) encodeSmall(buf, src []byte) ([]byte, error) {
-	if len(buf) == len(src) {
+	if len(src) == 0 {
 		return buf, nil
 	}
-	n, err := parseUint64(src[len(buf):])
+	n, err := parseUint64(src)
 	if err != nil {
 		return nil, err
 	}
@@ -147,8 +147,8 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 			break
 		}
 	}
-	if len(src) < 11 { // 58^10 < math.MaxUint64 < 58^11
-		n, err := enc.DecodeUint64(src)
+	if len(src[len(buf):]) < 11 { // 58^10 < math.MaxUint64 < 58^11
+		n, err := enc.DecodeUint64(src[len(buf):])
 		if err != nil {
 			return nil, err
 		}
