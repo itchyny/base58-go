@@ -51,7 +51,7 @@ func (err encodeError) Error() string {
 	return fmt.Sprintf("expecting a non-negative number but got %q", []byte(err))
 }
 
-// Encode encodes the number represented in the byte array base 10.
+// Encode encodes the number represented in the byte slice base 10.
 func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 	buf := make([]byte, 0, len(src))
 	for _, c := range src {
