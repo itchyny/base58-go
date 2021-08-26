@@ -175,7 +175,7 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 	for i := len(xs) - 1; i >= 0; i-- {
 		x := xs[i]
 		if i < len(xs)-1 {
-			for k := uint64(overflow / 10); x < k; k /= 10 {
+			for k := uint64(overflow / 10); x < k && 1 < k; k /= 10 {
 				buf = append(buf, '0')
 			}
 		}
