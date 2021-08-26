@@ -47,7 +47,7 @@ brew install itchyny/tap/base58
 
 ### Build from source
 ```bash
-go get github.com/itchyny/base58-go/cmd/base58
+go install github.com/itchyny/base58-go/cmd/base58@latest
 ```
 
 ### Basic usage
