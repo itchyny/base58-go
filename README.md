@@ -1,7 +1,7 @@
 # base58-go
 [![CI Status](https://github.com/itchyny/base58-go/workflows/CI/badge.svg)](https://github.com/itchyny/base58-go/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/itchyny/base58-go)](https://goreportcard.com/report/github.com/itchyny/base58-go)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/itchyny/base58-go/blob/master/LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/itchyny/base58-go/blob/main/LICENSE)
 [![release](https://img.shields.io/github/release/itchyny/base58-go/all.svg)](https://github.com/itchyny/base58-go/releases)
 [![pkg.go.dev](https://pkg.go.dev/badge/github.com/itchyny/base58-go)](https://pkg.go.dev/github.com/itchyny/base58-go)
 
