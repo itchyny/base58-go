@@ -39,12 +39,6 @@ const (
 	overflow = 100000000000000000 // 10^slice
 )
 
-func reverse(data []byte) {
-	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
-		data[i], data[j] = data[j], data[i]
-	}
-}
-
 type encodeError []byte
 
 func (err encodeError) Error() string {
@@ -53,18 +47,27 @@ func (err encodeError) Error() string {
 
 // Encode encodes the number represented in the byte slice base 10.
 func (enc *Encoding) Encode(src []byte) ([]byte, error) {
-	buf := make([]byte, 0, len(src))
+	buf := make([]byte, len(src))
+	var zerocnt int
 	for _, c := range src {
 		if c == '0' {
-			buf = append(buf, enc.alphabet[0])
+			zerocnt++
 		} else {
 			break
 		}
 	}
-	if len(src[len(buf):]) < 20 { // 10^19 < math.MaxUint64 < 10^20
-		return enc.encodeSmall(buf, src[len(buf):])
+	if len(src)-zerocnt < 20 { // 10^19 < math.MaxUint64 < 10^20
+		n, err := parseUint64(src[zerocnt:])
+		if err != nil {
+			return nil, err
+		}
+		buf, i := enc.appendEncodeUint64(buf, n)
+		for ; zerocnt > 0; zerocnt-- {
+			i--
+			buf[i] = enc.alphabet[0]
+		}
+		return buf[i:], nil
 	}
-	zerocnt := len(buf)
 	xs := make([]uint64, (len(src)+(slice-1))/slice)
 	j, k := len(src)-slice, len(src)
 	var err error
@@ -78,12 +81,13 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 		}
 		j, k = j-slice, j
 	}
+	i := len(buf)
 L:
 	for len(xs) > 1 || xs[0] > 0 {
-		for i, x := range xs {
+		for j, x := range xs {
 			if x != 0 {
-				if i > 0 {
-					xs = xs[i:]
+				if j > 0 {
+					xs = xs[j:]
 				}
 				if len(xs) == 0 {
 					break L
@@ -92,27 +96,20 @@ L:
 			}
 		}
 		var mod uint64
-		for i, x := range xs {
-			if i > 0 {
+		for j, x := range xs {
+			if j > 0 {
 				x += mod * overflow
 			}
-			xs[i], mod = x/radix, x%radix
+			xs[j], mod = x/radix, x%radix
 		}
-		buf = append(buf, enc.alphabet[int(mod)])
+		i--
+		buf[i] = enc.alphabet[int(mod)]
 	}
-	reverse(buf[zerocnt:])
-	return buf, nil
-}
-
-func (enc *Encoding) encodeSmall(buf, src []byte) ([]byte, error) {
-	if len(src) == 0 {
-		return buf, nil
+	for ; zerocnt > 0; zerocnt-- {
+		i--
+		buf[i] = enc.alphabet[0]
 	}
-	n, err := parseUint64(src)
-	if err != nil {
-		return nil, err
-	}
-	return enc.appendEncodeUint64(buf, n), nil
+	return buf[i:], nil
 }
 
 // EncodeUint64 encodes the unsigned integer.
@@ -120,18 +117,19 @@ func (enc *Encoding) EncodeUint64(n uint64) []byte {
 	if n == 0 {
 		return []byte{enc.alphabet[0]}
 	}
-	return enc.appendEncodeUint64(make([]byte, 0, 11), n)
+	buf, i := enc.appendEncodeUint64(make([]byte, 11), n)
+	return buf[i:]
 }
 
-func (enc *Encoding) appendEncodeUint64(buf []byte, n uint64) []byte {
-	zerocnt := len(buf)
+func (enc *Encoding) appendEncodeUint64(buf []byte, n uint64) ([]byte, int) {
+	i := len(buf)
 	var mod uint64
 	for n > 0 {
 		n, mod = n/radix, n%radix
-		buf = append(buf, enc.alphabet[mod])
+		i--
+		buf[i] = enc.alphabet[mod]
 	}
-	reverse(buf[zerocnt:])
-	return buf
+	return buf, i
 }
 
 // Decode decodes the base58 encoded bytes.
