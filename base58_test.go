@@ -143,6 +143,30 @@ func TestDecodeUint64(t *testing.T) {
 	}
 }
 
+func TestDecodeUint64_Overflow(t *testing.T) {
+	for _, testcase := range testcases {
+		src := testcase.encoding.EncodeUint64(math.MaxUint64)
+		got, err := testcase.encoding.DecodeUint64([]byte(src))
+		if err != nil {
+			t.Fatalf("Error occurred while decoding %s (%s).", src, err)
+		}
+		if got != math.MaxUint64 {
+			t.Errorf("DecodeUint64(%s) = %d, want %d", src, got, uint64(math.MaxUint64))
+		}
+		bs := []byte(src)
+		bs[len(bs)-1]++
+		got, err = testcase.encoding.DecodeUint64(bs)
+		if err == nil {
+			t.Errorf("Overflow error should occur while decoding %s but got %d.", bs, got)
+		}
+		src = []byte("aaaaaaaaaaaaaa")
+		got, err = testcase.encoding.DecodeUint64(src)
+		if err == nil {
+			t.Errorf("Overflow error should occur while decoding %s but got %d.", src, got)
+		}
+	}
+}
+
 func BenchmarkEncode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, testcase := range testcases {
