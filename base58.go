@@ -82,15 +82,11 @@ func (enc *Encoding) Encode(src []byte) ([]byte, error) {
 		j, k = j-slice, j
 	}
 	i := len(buf)
-L:
 	for len(xs) > 1 || xs[0] > 0 {
 		for j, x := range xs {
 			if x != 0 {
 				if j > 0 {
 					xs = xs[j:]
-				}
-				if len(xs) == 0 {
-					break L
 				}
 				break
 			}
