@@ -1,3 +1,4 @@
+// base58 - Encode and decode using Base58 representation
 package main
 
 import (

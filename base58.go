@@ -1,3 +1,4 @@
+// Package base58 provides the APIs for encoding and decoding base58 strings.
 package base58
 
 import (
