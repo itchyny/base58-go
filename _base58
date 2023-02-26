@@ -2,12 +2,15 @@
 
 _base58()
 {
-  _arguments -C \
-    '(-D --decode)'{-D,--decode}'[decodes input]' \
-    '(-e --encoding)'{-e,--encoding}'=-[encoding name (default: flickr)]:encoding name:(flickr ripple bitcoin)' \
-    '(-i --input)'{-i,--input}'[input file]' \
-    '(-o --output)'{-o,--output}'[output file]' \
-    '(-v --version)'{-v,--version}'[print version]' \
-    '(-h --help)'{-h,--help}'[print help]' \
-    && ret=0
+  _arguments -s -S \
+    '(-D --decode)'{-D,--decode}'[decode input]' \
+    '(-e --encoding)'{-e,--encoding}'=[encoding name]:encoding name:((
+      flickr\:"Flickr'\''s encoding for short URLs (default)"
+      ripple\:"Ripple'\''s encoding for addresses"
+      bitcoin\:"Bitcoin'\''s encoding for addresses"))' \
+    '*'{-i,--input}'=[input file]:input file:_files' \
+    '(-o --output)'{-o,--output}'=[output file]:output file:_files' \
+    '(- *)'{-v,--version}'[print version]' \
+    '(- *)'{-h,--help}'[print help]' \
+    '*:input file:_files'
 }
