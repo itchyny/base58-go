@@ -1,8 +1,8 @@
 BIN := base58
 VERSION := $$(make -s show-version)
-VERSION_PATH := cli
-CURRENT_REVISION := $(shell git rev-parse --short HEAD)
-BUILD_LDFLAGS := "-s -w -X github.com/itchyny/$(BIN)-go/cli.revision=$(CURRENT_REVISION)"
+VERSION_PATH := cmd/$(BIN)
+CURRENT_REVISION = $(shell git rev-parse --short HEAD)
+BUILD_LDFLAGS = "-s -w -X main.revision=$(CURRENT_REVISION)"
 GOBIN ?= $(shell go env GOPATH)/bin
 
 .PHONY: all
@@ -14,11 +14,11 @@ build:
 
 .PHONY: install
 install:
-	go install -ldflags=$(BUILD_LDFLAGS) ./...
+	go install -ldflags=$(BUILD_LDFLAGS) ./cmd/$(BIN)
 
 .PHONY: show-version
 show-version: $(GOBIN)/gobump
-	@gobump show -r $(VERSION_PATH)
+	@gobump show -r "$(VERSION_PATH)"
 
 $(GOBIN)/gobump:
 	@go install github.com/x-motemen/gobump/cmd/gobump@latest

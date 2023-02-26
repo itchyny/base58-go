@@ -1,7 +1,6 @@
-package cli
+package main
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 )
@@ -311,12 +310,11 @@ invalid character 'l' in decoding a base58 string "Fal"
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			outStream := new(bytes.Buffer)
-			errStream := new(bytes.Buffer)
+			var outStream, errStream strings.Builder
 			cli := cli{
 				inStream:  strings.NewReader(tc.input),
-				outStream: outStream,
-				errStream: errStream,
+				outStream: &outStream,
+				errStream: &errStream,
 			}
 			got := cli.run(tc.args)
 			if tc.err == "" {
