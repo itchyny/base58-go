@@ -296,9 +296,10 @@ invalid character 'l' in decoding a base58 string "Fal"
 			errRe: regexp.MustCompile(name + ": boolean flag `--decode' cannot have an argument\n"),
 		},
 		{
-			name:  "encoding error",
-			args:  []string{"--encoding", "foo"},
-			errRe: regexp.MustCompile(name + ": invalid argument for flag `--encoding': expected one of \\[flickr, ripple, bitcoin\\] but got foo\n"),
+			name: "encoding error",
+			args: []string{"--encoding", "foo"},
+			errRe: regexp.MustCompile(name + ": invalid argument for flag `--encoding': " +
+				"expected one of \\[flickr, ripple, bitcoin\\] but got foo\n"),
 		},
 		{
 			name: "encoding error",
@@ -317,14 +318,16 @@ invalid character 'l' in decoding a base58 string "Fal"
 			err:  name + ": expected argument for flag `--input'\n",
 		},
 		{
-			name:  "input error file",
-			args:  []string{"--input", "xxx"},
-			errRe: regexp.MustCompile(name + ": open xxx: (?:no such file or directory|The system cannot find the file specified\\.)\n"),
+			name: "input error file",
+			args: []string{"--input", "xxx"},
+			errRe: regexp.MustCompile(name + ": open xxx: (?:no such file or directory|" +
+				"The system cannot find the file specified\\.)\n"),
 		},
 		{
-			name:  "input error file",
-			args:  []string{"--", "--input"},
-			errRe: regexp.MustCompile(name + ": open --input: (?:no such file or directory|The system cannot find the file specified\\.)\n"),
+			name: "input error file",
+			args: []string{"--", "--input"},
+			errRe: regexp.MustCompile(name + ": open --input: (?:no such file or directory|" +
+				"The system cannot find the file specified\\.)\n"),
 		},
 		{
 			name: "invalid flag",
