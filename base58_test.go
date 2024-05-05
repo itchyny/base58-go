@@ -102,7 +102,7 @@ func TestEncode(t *testing.T) {
 
 func TestEncodeUint64(t *testing.T) {
 	for _, testcase := range testcases {
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			n := rand.Uint64() % uint64(math.Pow10(int(i/5)))
 			got := testcase.encoding.EncodeUint64(n)
 			expected, err := testcase.encoding.Encode([]byte(strconv.FormatUint(n, 10)))
@@ -132,7 +132,7 @@ func TestDecode(t *testing.T) {
 
 func TestDecodeUint64(t *testing.T) {
 	for _, testcase := range testcases {
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			n := rand.Uint64() % uint64(math.Pow10(int(i/5)))
 			src := testcase.encoding.EncodeUint64(n)
 			got, err := testcase.encoding.DecodeUint64(src)
@@ -171,7 +171,7 @@ func TestDecodeUint64_Overflow(t *testing.T) {
 }
 
 func BenchmarkEncode(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		for _, testcase := range testcases {
 			for _, pair := range testcase.testpairs {
 				_, _ = testcase.encoding.Encode([]byte(pair.decoded))
@@ -181,7 +181,7 @@ func BenchmarkEncode(b *testing.B) {
 }
 
 func BenchmarkDecode(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		for _, testcase := range testcases {
 			for _, pair := range testcase.testpairs {
 				_, _ = testcase.encoding.Decode([]byte(pair.encoded))
