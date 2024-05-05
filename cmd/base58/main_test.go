@@ -1,17 +1,20 @@
 package main
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
 
 func TestCliRun(t *testing.T) {
 	testCases := []struct {
-		name     string
-		args     []string
-		input    string
-		expected string
-		err      string
+		name       string
+		args       []string
+		input      string
+		expected   string
+		expectedRe *regexp.Regexp
+		err        string
+		errRe      *regexp.Regexp
 	}{
 		{
 			name: "encode",
@@ -272,6 +275,12 @@ jpXCZedGfVR
 `,
 		},
 		{
+			name:     "short clumped options",
+			args:     []string{"-De=ripple"},
+			input:    "r\n",
+			expected: "0\n",
+		},
+		{
 			name: "decode error",
 			args: []string{"--decode"},
 			input: `FOO
@@ -282,9 +291,19 @@ invalid character 'l' in decoding a base58 string "Fal"
 `,
 		},
 		{
+			name:  "decode flag error",
+			args:  []string{"--decode=foo"},
+			errRe: regexp.MustCompile(name + ": boolean flag `--decode' cannot have an argument\n"),
+		},
+		{
+			name:  "encoding error",
+			args:  []string{"--encoding", "foo"},
+			errRe: regexp.MustCompile(name + ": invalid argument for flag `--encoding': expected one of \\[flickr, ripple, bitcoin\\] but got foo\n"),
+		},
+		{
 			name: "encoding error",
-			args: []string{"--encoding", "foo"},
-			err:  "Invalid value `foo' for option `-e, --encoding'. Allowed values are: flickr, ripple or bitcoin\n",
+			args: []string{"--encoding"},
+			err:  name + ": expected argument for flag `--encoding'\n",
 		},
 		{
 			name:  "negative number error",
@@ -295,17 +314,32 @@ invalid character 'l' in decoding a base58 string "Fal"
 		{
 			name: "input error",
 			args: []string{"--input"},
-			err:  "expected argument for flag `-i, --input'\n",
+			err:  name + ": expected argument for flag `--input'\n",
 		},
 		{
-			name: "input error file",
-			args: []string{"--input", "xxx"},
-			err:  "open xxx: no such file or directory\n",
+			name:  "input error file",
+			args:  []string{"--input", "xxx"},
+			errRe: regexp.MustCompile(name + ": open xxx: (?:no such file or directory|The system cannot find the file specified\\.)\n"),
+		},
+		{
+			name:  "input error file",
+			args:  []string{"--", "--input"},
+			errRe: regexp.MustCompile(name + ": open --input: (?:no such file or directory|The system cannot find the file specified\\.)\n"),
 		},
 		{
 			name: "invalid flag",
 			args: []string{"--foo"},
-			err:  "unknown flag `foo'\n",
+			err:  name + ": unknown flag `--foo'\n",
+		},
+		{
+			name:       "version flag",
+			args:       []string{"--version"},
+			expectedRe: regexp.MustCompile("^" + name + " "),
+		},
+		{
+			name:       "help flag",
+			args:       []string{"--help"},
+			expectedRe: regexp.MustCompile("-h, --help"),
 		},
 	}
 	for _, tc := range testCases {
@@ -317,19 +351,31 @@ invalid character 'l' in decoding a base58 string "Fal"
 				errStream: &errStream,
 			}
 			got := cli.run(tc.args)
-			if tc.err == "" {
+			if tc.err == "" && tc.errRe == nil {
 				if expected := exitCodeOK; got != expected {
 					t.Errorf("expected: %v\ngot: %v", expected, got)
 				}
-				if got, expected := outStream.String(), tc.expected; got != expected {
-					t.Errorf("expected: %v\ngot: %v", expected, got)
+				if tc.expectedRe != nil {
+					if got, expected := outStream.String(), tc.expectedRe; !expected.MatchString(got) {
+						t.Errorf("expected: %v\ngot: %v", expected, got)
+					}
+				} else {
+					if got, expected := outStream.String(), tc.expected; got != expected {
+						t.Errorf("expected: %v\ngot: %v", expected, got)
+					}
 				}
 			} else {
 				if expected := exitCodeErr; got != expected {
 					t.Errorf("expected: %v\ngot: %v", expected, got)
 				}
-				if got, expected := errStream.String(), tc.err; got != expected {
-					t.Errorf("expected: %v\ngot: %v", expected, got)
+				if tc.errRe != nil {
+					if got, expected := errStream.String(), tc.errRe; !expected.MatchString(got) {
+						t.Errorf("expected: %v\ngot: %v", expected, got)
+					}
+				} else {
+					if got, expected := errStream.String(), tc.err; got != expected {
+						t.Errorf("expected: %v\ngot: %v", expected, got)
+					}
 				}
 			}
 		})
