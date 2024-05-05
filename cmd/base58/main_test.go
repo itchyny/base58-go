@@ -360,7 +360,7 @@ invalid character 'l' in decoding a base58 string "Fal"
 				}
 				if tc.expectedRe != nil {
 					if got, expected := outStream.String(), tc.expectedRe; !expected.MatchString(got) {
-						t.Errorf("expected: %v\ngot: %v", expected, got)
+						t.Errorf("expected pattern: %v\ngot: %v", expected, got)
 					}
 				} else {
 					if got, expected := outStream.String(), tc.expected; got != expected {
@@ -373,7 +373,7 @@ invalid character 'l' in decoding a base58 string "Fal"
 				}
 				if tc.errRe != nil {
 					if got, expected := errStream.String(), tc.errRe; !expected.MatchString(got) {
-						t.Errorf("expected: %v\ngot: %v", expected, got)
+						t.Errorf("expected pattern: %v\ngot: %v", expected, got)
 					}
 				} else {
 					if got, expected := errStream.String(), tc.err; got != expected {
