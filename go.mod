@@ -1,6 +1,6 @@
 module github.com/itchyny/base58-go
 
-go 1.19
+go 1.22.0
 
 require github.com/jessevdk/go-flags v1.5.0
 
