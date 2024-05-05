@@ -1,4 +1,3 @@
-// base58 - Encode and decode using Base58 representation
 package main
 
 import (
@@ -8,7 +7,9 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"slices"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/itchyny/base58-go"
 	"github.com/jessevdk/go-flags"
@@ -64,12 +65,6 @@ func (cli *cli) run(args []string) int {
 		fmt.Fprintf(cli.outStream, "%s %s (rev: %s/%s)\n", name, version, revision, runtime.Version())
 		return exitCodeOK
 	}
-	var inputFiles []string
-	for _, name := range append(opts.Input, args...) {
-		if name != "" && name != "-" {
-			inputFiles = append(inputFiles, name)
-		}
-	}
 	if opts.Output != "-" {
 		file, err := os.Create(opts.Output)
 		if err != nil {
@@ -79,81 +74,69 @@ func (cli *cli) run(args []string) int {
 		defer file.Close()
 		cli.outStream = file
 	}
-	status := exitCodeOK
-	if len(inputFiles) == 0 {
-		if s := cli.runInternal(opts.Decode, opts.Encoding, cli.inStream); s != exitCodeOK {
-			status = s
-		}
+	var f func([]byte) ([]byte, error)
+	if opts.Decode {
+		f = opts.Encoding.Decode
+	} else {
+		f = opts.Encoding.Encode
 	}
-	for _, name := range inputFiles {
-		if s := cli.runFile(opts.Decode, opts.Encoding, name); s != exitCodeOK {
-			status = s
-		}
+	if len(args) == 0 {
+		args = append(args, opts.Input...)
+	}
+	status := exitCodeOK
+	for _, name := range args {
+		status = max(cli.runInternal(name, f), status)
 	}
 	return status
 }
 
-func (cli *cli) runFile(decode bool, encoding *base58.Encoding, name string) int {
-	file, err := os.Open(name)
-	if err != nil {
-		fmt.Fprintln(cli.errStream, err.Error())
-		return exitCodeErr
+func (cli *cli) runInternal(name string, f func([]byte) ([]byte, error)) int {
+	var in io.Reader
+	if name == "-" {
+		in = cli.inStream
+	} else {
+		file, err := os.Open(name)
+		if err != nil {
+			fmt.Fprintln(cli.errStream, err.Error())
+			return exitCodeErr
+		}
+		defer file.Close()
+		in = file
 	}
-	defer file.Close()
-	return cli.runInternal(decode, encoding, file)
-}
-
-func (cli *cli) runInternal(decode bool, encoding *base58.Encoding, in io.Reader) int {
 	scanner := bufio.NewScanner(in)
 	status := exitCodeOK
-	var result []byte
-	var err error
 	for scanner.Scan() {
-		src := scanner.Bytes()
-		if decode {
-			result, err = processLine(src, encoding.Decode)
-		} else {
-			result, err = processLine(src, encoding.Encode)
-		}
+		result, err := processLine(scanner.Bytes(), f)
 		if err != nil {
 			fmt.Fprintln(cli.errStream, err.Error()) // should print error each line
 			status = exitCodeErr
 			continue
 		}
 		cli.outStream.Write(result)
-		cli.outStream.Write([]byte{0x0a})
+		cli.outStream.Write([]byte{'\n'})
 	}
 	return status
 }
 
 func processLine(src []byte, f func([]byte) ([]byte, error)) ([]byte, error) {
-	var i, j int
-	var res []byte
-	for j < len(src) {
-		j = bytes.IndexFunc(src[i:], unicode.IsSpace)
-		if j >= 0 {
-			j += i
-		} else {
-			j = len(src)
+	var results [][]byte
+	for i := 0; len(src) > 0; src = src[i:] {
+		if i = bytes.IndexFunc(src, unicode.IsSpace); i == 0 {
+			_, width := utf8.DecodeRune(src)
+			results = append(results, src[:width])
+			src = src[width:]
+			continue
+		} else if i < 0 {
+			i = len(src)
 		}
-		got, err := f(src[i:j])
+		result, err := f(src[:i])
 		if err != nil {
 			return nil, err
 		}
-		res = append(res, got...)
-		if j == len(src) {
-			break
-		}
-		i = bytes.IndexFunc(src[j:], func(r rune) bool { return !unicode.IsSpace(r) })
-		if i >= 0 {
-			i += j
-		} else {
-			i = len(src)
-		}
-		res = append(res, src[j:i]...)
-		if i == len(src) {
-			break
-		}
+		results = append(results, result)
 	}
-	return res, nil
+	if len(results) == 1 {
+		return results[0], nil
+	}
+	return slices.Concat(results...), nil
 }
