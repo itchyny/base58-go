@@ -1,5 +1,5 @@
 # base58-go
-[![CI Status](https://github.com/itchyny/base58-go/workflows/CI/badge.svg)](https://github.com/itchyny/base58-go/actions)
+[![CI Status](https://github.com/itchyny/base58-go/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/itchyny/base58-go/actions?query=branch:main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/itchyny/base58-go)](https://goreportcard.com/report/github.com/itchyny/base58-go)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/itchyny/base58-go/blob/main/LICENSE)
 [![release](https://img.shields.io/github/release/itchyny/base58-go/all.svg)](https://github.com/itchyny/base58-go/releases)
@@ -80,7 +80,7 @@ go install github.com/itchyny/base58-go/cmd/base58@latest
 Report bug at [Issues・itchyny/base58-go - GitHub](https://github.com/itchyny/base58-go/issues).
 
 ## Author
-itchyny (https://github.com/itchyny)
+itchyny (<https://github.com/itchyny>)
 
 ## License
 This software is released under the MIT License, see LICENSE.
