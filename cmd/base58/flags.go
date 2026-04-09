@@ -27,7 +27,7 @@ func parseFlags(args []string, opts any) ([]string, error) {
 				val.SetString(def)
 			case reflect.Slice:
 				val.Set(reflect.Append(val, reflect.ValueOf(def)))
-			case reflect.Ptr:
+			case reflect.Pointer:
 				val.Set(reflect.New(val.Type().Elem()))
 				if unmarshaler, ok := val.Interface().(interface {
 					UnmarshalFlag(string) error
@@ -107,7 +107,7 @@ func parseFlags(args []string, opts any) ([]string, error) {
 				return nil, fmt.Errorf("expected argument for flag `%s'", arg)
 			}
 			val.Set(reflect.Append(val, reflect.ValueOf(args[i])))
-		case reflect.Ptr:
+		case reflect.Pointer:
 			if i++; i >= len(args) {
 				return nil, fmt.Errorf("expected argument for flag `%s'", arg)
 			}
