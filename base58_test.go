@@ -162,7 +162,7 @@ func TestDecodeUint64_Overflow(t *testing.T) {
 		if err == nil {
 			t.Errorf("Overflow error should occur while decoding %s but got %d.", bs, got)
 		}
-		src = []byte("aaaaaaaaaaaaaa")
+		src = []byte("zzzzzzzzzzzz")
 		got, err = testcase.encoding.DecodeUint64(src)
 		if err == nil {
 			t.Errorf("Overflow error should occur while decoding %s but got %d.", src, got)

@@ -3,6 +3,7 @@ package base58
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -35,9 +36,11 @@ var RippleEncoding = New([]byte("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8o
 var BitcoinEncoding = New([]byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"))
 
 const (
-	radix    = uint64(58)
-	slice    = 17                 // radix * 10^slice < math.MaxUint64
-	overflow = 100000000000000000 // 10^slice
+	radix       = uint64(58)
+	slice       = 17                 // radix * 10^slice < math.MaxUint64
+	overflow    = 100000000000000000 // 10^slice
+	overflowN   = math.MaxUint64 / radix
+	overflowMod = math.MaxUint64 % radix
 )
 
 type encodeError []byte
@@ -181,17 +184,16 @@ func (enc *Encoding) Decode(src []byte) ([]byte, error) {
 
 // DecodeUint64 decodes the base58 encoded bytes to an unsigned integer.
 func (enc *Encoding) DecodeUint64(src []byte) (uint64, error) {
-	var n, m uint64
+	var n uint64
 	var i int64
 	for _, c := range src {
 		if i = enc.decodeMap[c]; i < 0 {
 			return 0, fmt.Errorf("invalid character '%c' in decoding a base58 string %q", c, src)
 		}
-		m = n*radix + uint64(i)
-		if m < n {
+		if n > overflowN || n == overflowN && uint64(i) > overflowMod {
 			return 0, fmt.Errorf("overflow in decoding a base58 string %q", src)
 		}
-		n = m
+		n = n*radix + uint64(i)
 	}
 	return n, nil
 }
